@@ -21,10 +21,7 @@ const currentPath = Astro.url.pathname;
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet" />
 
     <!-- Open Graph -->
     <meta property="og:title" content={SITE.title} />
@@ -57,19 +54,16 @@ const currentPath = Astro.url.pathname;
   <body class="min-h-screen">
     <!-- 顶部导航 -->
     <header class="navbar" id="navbar">
-      <div class="max-w-3xl mx-auto px-5 sm:px-6">
+      <div class="site-shell">
         <div class="flex items-center justify-between h-16">
           <a
             href="/"
-            class="text-lg font-bold tracking-tight no-underline"
+            class="site-mark no-underline"
             style="color: var(--color-text);"
           >
             <span class="inline-flex items-center gap-2">
-              <span
-                class="w-2 h-2 rounded-full inline-block"
-                style="background: var(--color-accent);"
-              ></span>
-              {SITE.title}
+              <span class="mark-monogram">CL</span>
+              <span>{SITE.title}<small>研究札记</small></span>
             </span>
           </a>
           <div class="flex items-center gap-1 sm:gap-2">
@@ -138,12 +132,12 @@ const currentPath = Astro.url.pathname;
       </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-16">
+    <main class="site-shell page-main">
       <slot />
     </main>
 
     <!-- 页脚 -->
-    <footer class="max-w-3xl mx-auto px-5 sm:px-6 py-10">
+    <footer class="site-shell site-footer">
       <div
         class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm"
         style="border-top: 1px solid var(--color-border); color: var(--color-text-faint);"

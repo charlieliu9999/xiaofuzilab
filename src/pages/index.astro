@@ -16,25 +16,31 @@ const publishedPosts = posts
 
 <BaseLayout>
   <!-- Hero 区域 -->
-  <section class="mb-16 animate-on-scroll">
-    <div class="max-w-xl">
+  <section class="home-hero animate-on-scroll">
+    <div class="hero-copy">
+      <p class="eyebrow">CHARLIE'S FIELD NOTES · 2026</p>
       <h1
-        class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4 text-balance"
-        style="line-height: 1.15; color: var(--color-text); letter-spacing: -0.03em;"
+        class="hero-title text-balance"
       >
-        {SITE.title}
+        把复杂的问题，<br /><em>想得更清楚一点。</em>
       </h1>
-      <p
-        class="text-lg leading-relaxed"
-        style="color: var(--color-text-muted);"
-      >
+      <p class="hero-description">
         {SITE.description}
       </p>
+      <div class="hero-links">
+        <a href="/about">认识 Charlie <span>↗</span></a>
+        <a href="/rss.xml">订阅 RSS <span>↗</span></a>
+      </div>
     </div>
+    <aside class="hero-note" aria-label="本站关注方向">
+      <span class="note-index">01—03</span>
+      <p>AI 协作</p><p>系统思考</p><p>研究方法</p>
+      <small>持续观察，长期写作。</small>
+    </aside>
   </section>
 
   <!-- 分隔线 -->
-  <div class="mb-10" style="border-top: 1px solid var(--color-border);"></div>
+  <div class="section-rule"><span>Selected writing</span></div>
 
   <!-- 文章列表标题 -->
   <div class="flex items-center justify-between mb-8">

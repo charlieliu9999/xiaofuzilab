@@ -8,7 +8,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "cf-build": "npm install --no-audit --no-fund && npm run build"
+    "deploy": "astro build && npx wrangler pages deploy dist --project-name charlie-blog --branch main"
   },
   "dependencies": {
     "@astrojs/rss": "4.0.11",

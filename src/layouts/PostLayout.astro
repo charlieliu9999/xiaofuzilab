@@ -1,5 +1,5 @@
 ---
-import { SITE } from "../config";
+import { SITE, NAV } from "../config";
 import "../styles/global.css";
 
 interface Props {
@@ -42,7 +42,7 @@ const pageUrl = slug ? `${SITE.siteUrl}/posts/${slug}` : SITE.siteUrl;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap"
       rel="stylesheet"
     />
 
@@ -113,12 +113,11 @@ const pageUrl = slug ? `${SITE.siteUrl}/posts/${slug}` : SITE.siteUrl;
             </span>
           </a>
           <div class="flex items-center gap-1 sm:gap-2">
-            <a href="/" class="nav-link px-2 sm:px-3">首页</a>
-            <a href="/posts" class="nav-link px-2 sm:px-3 nav-link-active"
-              >文章</a
-            >
-            <a href="/tags" class="nav-link px-2 sm:px-3">标签</a>
-            <a href="/about" class="nav-link px-2 sm:px-3">关于</a>
+            {NAV.map((item) => (
+              <a href={item.href} class={`nav-link px-2 sm:px-3 ${item.href === "/posts" ? "nav-link-active" : ""}`}>
+                {item.label}
+              </a>
+            ))}
             <button
               id="theme-toggle"
               class="ml-1 p-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-card)]"
