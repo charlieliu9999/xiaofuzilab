@@ -1,0 +1,101 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const rawPosts = import.meta.glob("../../content/posts/*.md", { eager: true });
+const posts = Object.values(rawPosts) as any[];
+const publishedPosts = posts.filter((p) => !p.frontmatter.draft);
+
+export async function getStaticPaths() {
+  const raw = import.meta.glob("../../content/posts/*.md", { eager: true });
+  const allPosts = Object.values(raw) as any[];
+  const pubPosts = allPosts.filter((p) => !p.frontmatter.draft);
+  const tagSet = new Set<string>();
+  pubPosts.forEach((post) => {
+    (post.frontmatter.tags as string[])?.forEach((tag: string) =>
+      tagSet.add(tag)
+    );
+  });
+  return Array.from(tagSet).map((tag) => ({
+    params: { tag },
+  }));
+}
+
+const { tag } = Astro.params;
+const taggedPosts = publishedPosts
+  .filter((p) => (p.frontmatter.tags as string[])?.includes(tag as string))
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
+---
+
+<BaseLayout>
+  <div class="mb-10 animate-on-scroll">
+    <div class="flex items-baseline gap-3 mb-2">
+      <h1
+        class="text-3xl sm:text-4xl font-extrabold tracking-tight"
+        style="color: var(--color-text); letter-spacing: -0.025em;"
+      >
+        #{tag}
+      </h1>
+      <span class="text-sm" style="color: var(--color-text-faint);">
+        {taggedPosts.length} 篇
+      </span>
+    </div>
+    <a
+      href="/tags"
+      class="inline-flex items-center gap-1 text-sm transition-colors duration-200"
+      style="color: var(--color-text-muted);"
+      onmouseover="this.style.color='var(--color-accent)'"
+      onmouseout="this.style.color='var(--color-text-muted)'"
+    >
+      ← 所有标签
+    </a>
+  </div>
+
+  <div class="space-y-3">
+    {taggedPosts.map((post, index) => (
+      <a
+        href={`/posts/${post.frontmatter.slug}`}
+        class="article-card animate-on-scroll"
+        style={`animation-delay: ${index * 0.06}s;`}
+      >
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-3 flex-wrap">
+            <time
+              datetime={new Date(post.frontmatter.date).toISOString()}
+              class="date-badge"
+            >
+              {new Date(post.frontmatter.date).toLocaleDateString("zh-CN", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              })}
+            </time>
+            <span style="color: var(--color-text-faint); font-size: 0.75rem;">·</span>
+            {
+              (post.frontmatter.tags as string[])
+                ?.slice(0, 3)
+                .map((t: string) => (
+                  <span class="tag">{t}</span>
+                ))
+            }
+          </div>
+          <h2
+            class="text-xl font-bold tracking-tight"
+            style="color: var(--color-text); line-height: 1.4; letter-spacing: -0.015em;"
+          >
+            {post.frontmatter.title}
+          </h2>
+          <p
+            class="text-sm leading-relaxed line-clamp-2"
+            style="color: var(--color-text-muted);"
+          >
+            {post.frontmatter.description}
+          </p>
+        </div>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

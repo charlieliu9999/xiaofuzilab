@@ -1,0 +1,193 @@
+---
+import PostLayout from "../../layouts/PostLayout.astro";
+
+const rawPosts = import.meta.glob("../../content/posts/*.md", { eager: true });
+const posts = Object.values(rawPosts) as any[];
+
+export async function getStaticPaths() {
+  const raw = import.meta.glob("../../content/posts/*.md", { eager: true });
+  const allPosts = Object.values(raw) as any[];
+  return allPosts
+    .filter((p) => !p.frontmatter.draft)
+    .map((post) => ({
+      params: { slug: post.frontmatter.slug },
+      props: { post },
+    }));
+}
+
+const { post } = Astro.props;
+const { frontmatter } = post;
+const { Content } = post;
+
+// 相邻文章
+const published = posts
+  .filter((p) => !p.frontmatter.draft)
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
+const currentIndex = published.findIndex(
+  (p) => p.frontmatter.slug === frontmatter.slug
+);
+const prevPost =
+  currentIndex < published.length - 1
+    ? published[currentIndex + 1]
+    : null;
+const nextPost =
+  currentIndex > 0 ? published[currentIndex - 1] : null;
+
+// 阅读时间估算
+const wordCount = (post as any).rawContent?.()?.length || 0;
+const readingTime = Math.max(1, Math.ceil(wordCount / 500));
+---
+
+<PostLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  date={new Date(frontmatter.date)}
+  tags={frontmatter.tags}
+  slug={frontmatter.slug}
+>
+  <article>
+    <!-- 文章头部 -->
+    <header class="mb-12">
+      <!-- 元信息 -->
+      <div class="flex items-center gap-3 mb-6 flex-wrap">
+        <time
+          datetime={new Date(frontmatter.date).toISOString()}
+          class="date-badge"
+        >
+          {new Date(frontmatter.date).toLocaleDateString("zh-CN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </time>
+        <span style="color: var(--color-text-faint); font-size: 0.75rem;">·</span>
+        <span
+          class="text-xs"
+          style="color: var(--color-text-faint); font-family: 'JetBrains Mono', monospace;"
+        >
+          {readingTime} 分钟阅读
+        </span>
+        {
+          (frontmatter.tags as string[])?.map((tag: string) => (
+            <>
+              <span style="color: var(--color-text-faint); font-size: 0.75rem;">·</span>
+              <a href={`/tags/${tag}`} class="tag">{tag}</a>
+            </>
+          ))
+        }
+      </div>
+
+      <!-- 标题 -->
+      <h1
+        class="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance mb-5"
+        style="color: var(--color-text); line-height: 1.2; letter-spacing: -0.025em;"
+      >
+        {frontmatter.title}
+      </h1>
+
+      <!-- 摘要 -->
+      {frontmatter.description && (
+        <p
+          class="text-lg leading-relaxed"
+          style="color: var(--color-text-muted);"
+        >
+          {frontmatter.description}
+        </p>
+      )}
+
+      <!-- 顶部分隔 -->
+      <div
+        class="mt-8 mb-0"
+        style="border-top: 1px solid var(--color-border);"
+      ></div>
+    </header>
+
+    <!-- 文章正文 -->
+    <div class="prose max-w-none">
+      <Content />
+    </div>
+
+    <!-- 底部分隔 -->
+    <div
+      class="mt-12 mb-0"
+      style="border-top: 1px solid var(--color-border);"
+    ></div>
+
+    <!-- 标签区 -->
+    {
+      (frontmatter.tags as string[])?.length > 0 && (
+        <div class="mt-8 flex items-center gap-2 flex-wrap">
+          <span
+            class="text-xs"
+            style="color: var(--color-text-faint);"
+          >
+            标签：
+          </span>
+          {
+            (frontmatter.tags as string[])?.map((tag: string) => (
+              <a href={`/tags/${tag}`} class="tag">{tag}</a>
+            ))
+          }
+        </div>
+      )
+    }
+
+    <!-- 上一篇 / 下一篇 -->
+    <nav class="mt-12">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          {prevPost && (
+            <a
+              href={`/posts/${prevPost.frontmatter.slug}`}
+              class="block p-5 rounded-lg border transition-all duration-200 group"
+              style="border-color: var(--color-border);"
+              onmouseover="this.style.borderColor='var(--color-accent)'; this.style.boxShadow='var(--shadow-sm)'"
+              onmouseout="this.style.borderColor='var(--color-border)'; this.style.boxShadow='none'"
+            >
+              <span
+                class="text-xs tracking-wide"
+                style="color: var(--color-text-faint);"
+              >
+                ← 上一篇
+              </span>
+              <p
+                class="text-sm font-medium mt-1.5 line-clamp-1 transition-colors duration-200 group-hover:text-[var(--color-accent)]"
+                style="color: var(--color-text-muted);"
+              >
+                {prevPost.frontmatter.title}
+              </p>
+            </a>
+          )}
+        </div>
+        <div class="text-right">
+          {nextPost && (
+            <a
+              href={`/posts/${nextPost.frontmatter.slug}`}
+              class="block p-5 rounded-lg border transition-all duration-200 group"
+              style="border-color: var(--color-border);"
+              onmouseover="this.style.borderColor='var(--color-accent)'; this.style.boxShadow='var(--shadow-sm)'"
+              onmouseout="this.style.borderColor='var(--color-border)'; this.style.boxShadow='none'"
+            >
+              <span
+                class="text-xs tracking-wide"
+                style="color: var(--color-text-faint);"
+              >
+                下一篇 →
+              </span>
+              <p
+                class="text-sm font-medium mt-1.5 line-clamp-1 transition-colors duration-200 group-hover:text-[var(--color-accent)]"
+                style="color: var(--color-text-muted);"
+              >
+                {nextPost.frontmatter.title}
+              </p>
+            </a>
+          )}
+        </div>
+      </div>
+    </nav>
+  </article>
+</PostLayout>

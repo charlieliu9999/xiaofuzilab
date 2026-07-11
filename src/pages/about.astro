@@ -1,0 +1,50 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout>
+  <div class="animate-on-scroll">
+    <h1
+      class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-8"
+      style="color: var(--color-text); letter-spacing: -0.025em;"
+    >
+      关于
+    </h1>
+
+    <div class="prose max-w-none">
+      <p class="text-lg" style="color: var(--color-text-muted);">
+        你好，我是 <strong style="color: var(--color-text);">Charlie</strong>。
+        这里是我记录研究过程和思考脉络的地方。
+      </p>
+
+      <blockquote>
+        <p>兴趣是第一生产力，品味是最深的护城河。</p>
+      </blockquote>
+
+      <p>
+        在这个博客里，我会分享自己在探索过程中的发现、困惑和总结。
+        比起「正确答案」，我更在意「为什么这样想」的思路 — 因为想法本身，
+        往往比结论更有价值。
+      </p>
+
+      <h2>写作原则</h2>
+      <ul>
+        <li>写清楚，不写玄虚</li>
+        <li>保留思考过程，不只给结论</li>
+        <li>不追热点，专注本质</li>
+        <li>一篇讲透一个主题</li>
+      </ul>
+
+      <h2>联系方式</h2>
+      <p>
+        如果你对某篇文章有想法或讨论，欢迎通过以下方式联系我：
+      </p>
+      <ul>
+        <li>
+          GitHub: <a href="https://github.com/charlieliu9999">@charlieliu9999</a>
+        </li>
+        <li>邮箱: charlie@example.com</li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>

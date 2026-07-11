@@ -1,0 +1,169 @@
+---
+import { SITE } from "../config";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const rawPosts = import.meta.glob("../content/posts/*.md", { eager: true });
+const posts = Object.values(rawPosts) as any[];
+
+const publishedPosts = posts
+  .filter((p) => !p.frontmatter.draft)
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
+---
+
+<BaseLayout>
+  <!-- Hero 区域 -->
+  <section class="mb-16 animate-on-scroll">
+    <div class="max-w-xl">
+      <h1
+        class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4 text-balance"
+        style="line-height: 1.15; color: var(--color-text); letter-spacing: -0.03em;"
+      >
+        {SITE.title}
+      </h1>
+      <p
+        class="text-lg leading-relaxed"
+        style="color: var(--color-text-muted);"
+      >
+        {SITE.description}
+      </p>
+    </div>
+  </section>
+
+  <!-- 分隔线 -->
+  <div class="mb-10" style="border-top: 1px solid var(--color-border);"></div>
+
+  <!-- 文章列表标题 -->
+  <div class="flex items-center justify-between mb-8">
+    <h2
+      class="text-xs font-semibold tracking-widest uppercase"
+      style="color: var(--color-text-faint); letter-spacing: 0.12em;"
+    >
+      最新文章
+    </h2>
+    <span
+      class="text-xs"
+      style="color: var(--color-text-faint); font-family: 'JetBrains Mono', monospace;"
+    >
+      {publishedPosts.length} 篇
+    </span>
+  </div>
+
+  <!-- 文章列表 -->
+  <div class="space-y-3">
+    {
+      publishedPosts.length === 0 ? (
+        <div class="py-20 text-center animate-on-scroll">
+          <p
+            class="text-lg mb-2"
+            style="color: var(--color-text-muted);"
+          >
+            还在酝酿第一篇故事...
+          </p>
+          <p class="text-sm" style="color: var(--color-text-faint);">
+            写好之后，会第一时间放在这里。
+          </p>
+        </div>
+      ) : (
+        publishedPosts.map((post, index) => (
+          <a
+            href={`/posts/${post.frontmatter.slug}`}
+            class="article-card animate-on-scroll"
+            style={`animation-delay: ${index * 0.06}s;`}
+          >
+            <div class="flex flex-col gap-3">
+              <!-- 元信息行 -->
+              <div class="flex items-center gap-3 flex-wrap">
+                <time
+                  datetime={new Date(post.frontmatter.date).toISOString()}
+                  class="date-badge"
+                >
+                  {new Date(post.frontmatter.date).toLocaleDateString("zh-CN", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  })}
+                </time>
+                <span style="color: var(--color-text-faint); font-size: 0.75rem;">·</span>
+                {
+                  (post.frontmatter.tags as string[])
+                    ?.slice(0, 3)
+                    .map((tag: string) => (
+                      <span class="tag">{tag}</span>
+                    ))
+                }
+              </div>
+
+              <!-- 标题 -->
+              <h3
+                class="text-xl font-bold tracking-tight"
+                style="color: var(--color-text); line-height: 1.4; letter-spacing: -0.015em;"
+              >
+                {post.frontmatter.title}
+              </h3>
+
+              <!-- 描述 -->
+              <p
+                class="text-sm leading-relaxed line-clamp-2"
+                style="color: var(--color-text-muted);"
+              >
+                {post.frontmatter.description}
+              </p>
+
+              <!-- 阅读提示 -->
+              <div class="flex items-center gap-1 mt-1">
+                <span
+                  class="text-xs font-medium"
+                  style="color: var(--color-accent);"
+                >
+                  阅读全文
+                </span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="color: var(--color-accent);"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+            </div>
+          </a>
+        ))
+      )
+    }
+  </div>
+
+  <!-- 查看全部 -->
+  {
+    publishedPosts.length > 0 && (
+      <div class="mt-10 text-center animate-on-scroll">
+        <a href="/posts" class="btn">
+          查看全部文章
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    )
+  }
+</BaseLayout>

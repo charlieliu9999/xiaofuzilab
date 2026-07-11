@@ -1,0 +1,240 @@
+---
+import { SITE } from "../config";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  date?: Date;
+  tags?: string[];
+  ogImage?: string;
+  slug?: string;
+}
+
+const {
+  title,
+  description = SITE.description,
+  date,
+  tags = [],
+  ogImage,
+  slug,
+} = Astro.props as Props;
+
+const fullTitle = `${title} | ${SITE.title}`;
+const pageUrl = slug ? `${SITE.siteUrl}/posts/${slug}` : SITE.siteUrl;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE.title}
+      href="/rss.xml"
+    />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={SITE.author} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:type" content="article" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {date && (
+      <meta property="article:published_time" content={date.toISOString()} />
+    )}
+    {tags.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    ))}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: fullTitle,
+      image: ogImage || undefined,
+      datePublished: date?.toISOString(),
+      author: [{ "@type": "Person", name: SITE.author }],
+    })}>
+    </script>
+
+    <!-- 深色模式防闪烁 -->
+    <script is:inline>
+      (function () {
+        var theme = localStorage.getItem("theme");
+        var prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        if (theme === "dark" || (!theme && prefersDark)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen">
+    <!-- 顶部导航 -->
+    <header class="navbar" id="navbar">
+      <div class="max-w-3xl mx-auto px-5 sm:px-6">
+        <div class="flex items-center justify-between h-16">
+          <a
+            href="/"
+            class="text-lg font-bold tracking-tight no-underline"
+            style="color: var(--color-text);"
+          >
+            <span class="inline-flex items-center gap-2">
+              <span
+                class="w-2 h-2 rounded-full inline-block"
+                style="background: var(--color-accent);"
+              ></span>
+              {SITE.title}
+            </span>
+          </a>
+          <div class="flex items-center gap-1 sm:gap-2">
+            <a href="/" class="nav-link px-2 sm:px-3">首页</a>
+            <a href="/posts" class="nav-link px-2 sm:px-3 nav-link-active"
+              >文章</a
+            >
+            <a href="/tags" class="nav-link px-2 sm:px-3">标签</a>
+            <a href="/about" class="nav-link px-2 sm:px-3">关于</a>
+            <button
+              id="theme-toggle"
+              class="ml-1 p-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-card)]"
+              aria-label="切换深色模式"
+              style="color: var(--color-text-muted);"
+              title="切换深色模式"
+            >
+              <svg
+                id="sun-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              <svg
+                id="moon-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="hidden"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-16">
+      <slot />
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="max-w-3xl mx-auto px-5 sm:px-6 py-10">
+      <div
+        class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm"
+        style="border-top: 1px solid var(--color-border); color: var(--color-text-faint);"
+      >
+        <span
+          >&copy; {new Date().getFullYear()} {SITE.author}.
+          兴趣是第一生产力。</span
+        >
+        <div class="flex items-center gap-5">
+          <a
+            href="/rss.xml"
+            class="transition-colors duration-200"
+            style="color: var(--color-text-faint);"
+            onmouseover="this.style.color='var(--color-accent)'"
+            onmouseout="this.style.color='var(--color-text-faint)'"
+            >RSS</a
+          >
+          <a
+            href="/sitemap-index.xml"
+            class="transition-colors duration-200"
+            style="color: var(--color-text-faint);"
+            onmouseover="this.style.color='var(--color-accent)'"
+            onmouseout="this.style.color='var(--color-text-faint)'"
+            >Sitemap</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <!-- 脚本 -->
+    <script is:inline>
+      // 导航栏滚动效果
+      var navbar = document.getElementById("navbar");
+      window.addEventListener("scroll", function () {
+        if (window.scrollY > 10) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+
+      // 深色模式切换
+      var toggle = document.getElementById("theme-toggle");
+      var sunIcon = document.getElementById("sun-icon");
+      var moonIcon = document.getElementById("moon-icon");
+
+      function updateIcon() {
+        var isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        sunIcon.classList.toggle("hidden", isDark);
+        moonIcon.classList.toggle("hidden", !isDark);
+      }
+
+      updateIcon();
+
+      toggle.addEventListener("click", function () {
+        var current = document.documentElement.getAttribute("data-theme");
+        var next = current === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        updateIcon();
+      });
+    </script>
+  </body>
+</html>

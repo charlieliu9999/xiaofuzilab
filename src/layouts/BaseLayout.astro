@@ -1,0 +1,231 @@
+---
+import { SITE, NAV } from "../config";
+import "../styles/global.css";
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE.title}
+      href="/rss.xml"
+    />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={SITE.title} />
+    <meta property="og:description" content={SITE.description} />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={SITE.title} />
+    <meta name="twitter:description" content={SITE.description} />
+
+    <!-- 深色模式防闪烁 -->
+    <script is:inline>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        if (theme === "dark" || (!theme && prefersDark)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+
+    <title>{SITE.title}</title>
+    <meta name="description" content={SITE.description} />
+  </head>
+  <body class="min-h-screen">
+    <!-- 顶部导航 -->
+    <header class="navbar" id="navbar">
+      <div class="max-w-3xl mx-auto px-5 sm:px-6">
+        <div class="flex items-center justify-between h-16">
+          <a
+            href="/"
+            class="text-lg font-bold tracking-tight no-underline"
+            style="color: var(--color-text);"
+          >
+            <span class="inline-flex items-center gap-2">
+              <span
+                class="w-2 h-2 rounded-full inline-block"
+                style="background: var(--color-accent);"
+              ></span>
+              {SITE.title}
+            </span>
+          </a>
+          <div class="flex items-center gap-1 sm:gap-2">
+            {
+              NAV.map((item) => {
+                const isActive =
+                  currentPath === item.href ||
+                  (item.href !== "/" && currentPath.startsWith(item.href));
+                return (
+                  <a
+                    href={item.href}
+                    class={`nav-link px-2 sm:px-3 ${
+                      isActive ? "nav-link-active" : ""
+                    }`}
+                  >
+                    {item.label}
+                  </a>
+                );
+              })
+            }
+            <button
+              id="theme-toggle"
+              class="ml-1 p-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-card)]"
+              aria-label="切换深色模式"
+              style="color: var(--color-text-muted);"
+              title="切换深色模式"
+            >
+              <svg
+                id="sun-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              <svg
+                id="moon-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="hidden"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-16">
+      <slot />
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="max-w-3xl mx-auto px-5 sm:px-6 py-10">
+      <div
+        class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm"
+        style="border-top: 1px solid var(--color-border); color: var(--color-text-faint);"
+      >
+        <span>&copy; {new Date().getFullYear()} {SITE.author}. 兴趣是第一生产力。</span>
+        <div class="flex items-center gap-5">
+          <a
+            href="/rss.xml"
+            class="transition-colors duration-200"
+            style="color: var(--color-text-faint);"
+            onmouseover="this.style.color='var(--color-accent)'"
+            onmouseout="this.style.color='var(--color-text-faint)'"
+          >
+            RSS
+          </a>
+          <a
+            href="/sitemap-index.xml"
+            class="transition-colors duration-200"
+            style="color: var(--color-text-faint);"
+            onmouseover="this.style.color='var(--color-accent)'"
+            onmouseout="this.style.color='var(--color-text-faint)'"
+          >
+            Sitemap
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- 脚本 -->
+    <script is:inline>
+      // 导航栏滚动效果
+      const navbar = document.getElementById("navbar");
+      let lastScrollY = 0;
+      window.addEventListener("scroll", () => {
+        const scrollY = window.scrollY;
+        if (scrollY > 10) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+        lastScrollY = scrollY;
+      });
+
+      // 深色模式切换
+      const toggle = document.getElementById("theme-toggle");
+      const sunIcon = document.getElementById("sun-icon");
+      const moonIcon = document.getElementById("moon-icon");
+
+      function updateIcon() {
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        sunIcon.classList.toggle("hidden", isDark);
+        moonIcon.classList.toggle("hidden", !isDark);
+      }
+
+      updateIcon();
+
+      toggle.addEventListener("click", () => {
+        const current =
+          document.documentElement.getAttribute("data-theme");
+        const next = current === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        updateIcon();
+      });
+
+      // 滚动渐入动画
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("animate-in");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+      );
+
+      document.querySelectorAll(".animate-on-scroll").forEach((el) => {
+        observer.observe(el);
+      });
+    </script>
+  </body>
+</html>

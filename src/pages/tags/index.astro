@@ -1,0 +1,77 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const rawPosts = import.meta.glob("../../content/posts/*.md", { eager: true });
+const posts = Object.values(rawPosts) as any[];
+const publishedPosts = posts.filter((p) => !p.frontmatter.draft);
+
+// 构建标签统计
+const tagMap = new Map<string, number>();
+publishedPosts.forEach((post) => {
+  (post.frontmatter.tags as string[])?.forEach((tag: string) => {
+    tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+  });
+});
+const tags = Array.from(tagMap.entries()).sort((a, b) => b[1] - a[1]);
+
+// 最大计数用于大小缩放
+const maxCount = tags.length > 0 ? tags[0][1] : 1;
+---
+
+<BaseLayout>
+  <div class="mb-10 animate-on-scroll">
+    <h1
+      class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3"
+      style="color: var(--color-text); letter-spacing: -0.025em;"
+    >
+      标签
+    </h1>
+    <p class="text-sm" style="color: var(--color-text-muted);">
+      {tags.length} 个标签，{publishedPosts.length} 篇文章
+    </p>
+  </div>
+
+  {
+    tags.length === 0 ? (
+      <div class="py-20 text-center animate-on-scroll">
+        <p class="text-lg" style="color: var(--color-text-muted);">
+          暂无标签
+        </p>
+      </div>
+    ) : (
+      <div class="flex flex-wrap gap-3">
+        {tags.map(([tag, count], index) => {
+          // 根据数量调整标签大小
+          const ratio = count / maxCount;
+          const size =
+            ratio > 0.7
+              ? "px-5 py-2.5 text-base"
+              : ratio > 0.4
+                ? "px-4 py-2 text-sm"
+                : "px-3 py-1.5 text-xs";
+          return (
+            <a
+              href={`/tags/${tag}`}
+              class={`inline-flex items-center gap-2 rounded-full border transition-all duration-200 animate-on-scroll ${size}`}
+              style={`
+                border-color: var(--color-border);
+                color: var(--color-text-muted);
+                animation-delay: ${index * 0.03}s;
+              `}
+              onmouseover="this.style.borderColor='var(--color-accent)'; this.style.color='var(--color-accent)'; this.style.transform='translateY(-1px)'"
+              onmouseout="this.style.borderColor='var(--color-border)'; this.style.color='var(--color-text-muted)'; this.style.transform='translateY(0)'"
+            >
+              <span class="font-medium">{tag}</span>
+              <span
+                class="tabular-nums"
+                style="color: var(--color-text-faint);"
+              >
+                {count}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    )
+  }
+</BaseLayout>
