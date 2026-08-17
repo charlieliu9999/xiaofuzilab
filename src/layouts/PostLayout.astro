@@ -7,6 +7,7 @@ interface Props {
   description?: string;
   date?: Date;
   tags?: string[];
+  author?: string;
   ogImage?: string;
   slug?: string;
 }
@@ -16,6 +17,7 @@ const {
   description = SITE.description,
   date,
   tags = [],
+  author = SITE.author,
   ogImage,
   slug,
 } = Astro.props as Props;
@@ -48,7 +50,7 @@ const pageUrl = slug ? `${SITE.siteUrl}/posts/${slug}` : SITE.siteUrl;
 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="author" content={SITE.author} />
+    <meta name="author" content={author} />
 
     <!-- Open Graph -->
     <meta property="og:title" content={fullTitle} />
@@ -77,7 +79,7 @@ const pageUrl = slug ? `${SITE.siteUrl}/posts/${slug}` : SITE.siteUrl;
       headline: fullTitle,
       image: ogImage || undefined,
       datePublished: date?.toISOString(),
-      author: [{ "@type": "Person", name: SITE.author }],
+      author: [{ "@type": "Person", name: author }],
     })}>
     </script>
 

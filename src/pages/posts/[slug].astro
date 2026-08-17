@@ -47,6 +47,8 @@ const readingTime = Math.max(1, Math.ceil(wordCount / 500));
   description={frontmatter.description}
   date={new Date(frontmatter.date)}
   tags={frontmatter.tags}
+  author={frontmatter.author}
+  ogImage={frontmatter.ogImage}
   slug={frontmatter.slug}
 >
   <article>
