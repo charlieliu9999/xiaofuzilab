@@ -40,6 +40,15 @@ const posts = (Object.values(rawPosts) as any[])
   </section>
 
   <section class="research-list">
+    <a class="research-entry animate-on-scroll" href="/ai-notes/ris-pacs-blueprint/">
+      <span class="entry-number">◆</span>
+      <div>
+        <div class="entry-meta"><span>HTML</span><time>2026-10-11</time></div>
+        <h2>AI Native RIS/PACS 系统总体方案</h2>
+        <p>最新方案：从系统定义、业务流程到技术架构、分期实施的完整蓝图。</p>
+      </div>
+      <span class="entry-arrow">↗</span>
+    </a>
     {posts.map((post, index) => (
       <a class="research-entry animate-on-scroll" href={`/posts/${post.frontmatter.slug}`}>
         <span class="entry-number">{String(index + 1).padStart(2, "0")}</span>
