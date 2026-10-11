@@ -68,7 +68,7 @@ draft: false
 
 老流程是直线排队：登记、等扫描、扫描、等阅片、写报告、等审核、签发、归档。先后只看谁先到，急不急靠临床打电话催，质量靠事后抽查。改成原生流程后，直线变成流水线：每个节点在往下传"这例该谁接"的同时，还沉淀"这一步已经确认了什么"。后面八个岗位的章节，都是把这张图放大到单个岗位看。
 
-![图 1 一次检查全程：九个节点](/images/ai-native-pacs-guide/fig1-end-to-end.png)
+![图 1 一次检查全程：九个节点](/images/ai-native-pacs-guide/fig1-end-to-end.svg)
 
 *图 1 一次检查全程：九个节点。深色两格（AI 预读、分诊派单）是与传统流程差别最大的地方：机器在医生打开病例之前，已读过一遍并排好顺序。*
 
@@ -98,7 +98,7 @@ draft: false
 - 预约靠人工排号：急诊、住院、门诊混在一起，空腹、憋尿、停药等准备事项靠口头交代，没确认、没回执，爽约和临时取消占了不少机时。
 - 登记内容写错只能电话追改，系统不校验，下游也用不上。
 
-![图 7 每个岗位共用的操作闭环](/images/ai-native-pacs-guide/fig7-role-loop.png)
+![图 7 每个岗位共用的操作闭环](/images/ai-native-pacs-guide/fig7-role-loop.svg)
 
 *图 7 每个岗位共用的操作闭环。机器先做准备和提示，人确认，确认过程留痕，再回流为规则改进。这条纪律在八个岗位都成立。*
 
@@ -173,7 +173,7 @@ draft: false
 - 报告从空白页写起：征象怎么描述、分级给到哪一级全凭个人习惯，同病种不同医生写法差很多，临床不好用，科研更没法直接用。
 - 外加算法要另开系统看结果再誊回，忙起来没人用。
 
-![图 2 诊断医生打开病例时：三件事分清](/images/ai-native-pacs-guide/fig2-diagnostician-workbench.png)
+![图 2 诊断医生打开病例时：三件事分清](/images/ai-native-pacs-guide/fig2-diagnostician-workbench.svg)
 
 *图 2 诊断医生打开病例时：三件事分清。系统已备好的、必须医生亲自做的、系统绝不能替医生做的。第三行是底线。*
 
@@ -355,7 +355,7 @@ draft: false
 
 **岗位八** — 原生系统每天产生大量机器中间结果，质控再靠事后抽几份报告就不够了。质控岗的角色从"抽报告的人"变为"看数据、管模型和规则的人"，前面七个岗位的事件在这里汇总成闭环。
 
-![图 4 四类数据资产](/images/ai-native-pacs-guide/fig4-data-assets.png)
+![图 4 四类数据资产](/images/ai-native-pacs-guide/fig4-data-assets.svg)
 
 *图 4 四类数据资产。质量问题最后都要落到这四类资产上查：图像、事实、规则版本，还是反馈没记。*
 
@@ -426,7 +426,7 @@ draft: false
 
 这一章开始回答"怎么建"。先立一个原则：不要指望买一套软件一次到位。原生 PACS 是把现有 RIS/PACS、影像存储、各单病种算法、报告系统重新分层组合，再补上过去没有的事实库、规则服务和反馈机制。分层清楚了，招标可以分开招，验收可以逐层验，换某个算法厂商也不会伤筋动骨。
 
-![图 3 五层架构 + 治理横切面](/images/ai-native-pacs-guide/fig3-architecture.png)
+![图 3 五层架构 + 治理横切面](/images/ai-native-pacs-guide/fig3-architecture.svg)
 
 *图 3 五层架构 + 治理横切面。治理贯穿五层：权限、审计、版本、脱敏在建设初期就要做进去，后期补代价高一个量级。*
 
@@ -444,7 +444,7 @@ draft: false
 
 ### 十个子系统：按此拆分招标与验收
 
-![图 6 十个核心子系统](/images/ai-native-pacs-guide/fig6-subsystems.png)
+![图 6 十个核心子系统](/images/ai-native-pacs-guide/fig6-subsystems.svg)
 
 *图 6 十个核心子系统。第 2、3、4 号（数据与知识）和第 5 号（算法）分开采购：数据归医院，算法可替换。*
 
@@ -510,7 +510,7 @@ draft: false
 
 建议设一个跨科室的常设小组（影像、信息、医务各出人），规则和模型的上线、降级、回滚由这个小组按既定标准决定，不靠临时拍板。
 
-![图 5 三期建设路线图](/images/ai-native-pacs-guide/fig5-roadmap.png)
+![图 5 三期建设路线图](/images/ai-native-pacs-guide/fig5-roadmap.svg)
 
 *图 5 三期建设路线图。每期结束都有可当场验收的成果，而不是无法核对的表述。*
 
