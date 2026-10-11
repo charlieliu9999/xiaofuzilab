@@ -2,7 +2,7 @@
 title: "AI Native RIS/PACS：系统总体方案与完整HTML入口"
 description: "一份独立的系统方案：说明AI Native RIS/PACS是什么、做什么，以及如何实现与交付。"
 date: 2026-10-11
-tags: ["医学影像", "AI Native", "RIS/PACS", "系统架构"]
+tags: ["医学影像", "AI Native", "RIS-PACS", "系统架构"]
 slug: "ai-native-ris-pacs-system-blueprint"
 draft: false
 ---
