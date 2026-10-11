@@ -1,0 +1,52 @@
+<section id="s15" class="section"><header class="section-header"><div class="meta"><span class="section-num">15</span><span class="eyebrow">技术实现</span></div><h2>标准、接口与互操作</h2></header><p>互操作验收同时检查协议、语义、身份、状态和错误恢复。FHIR不是影像像素仓库：ImagingStudy表达影像检查及对象相关信息，实际DICOM实例仍需要通过相应影像服务获取。<a class="ref" href="#ref-7" aria-label="参考资料 7">[7]</a></p><div class="table-scroll"><table class=""><thead><tr><th scope="col">接口／对象</th><th scope="col">应用位置</th><th scope="col">项目必须明确的内容</th></tr></thead><tbody><tr><td>DICOM DIMSE</td><td>设备发送、查询与获取图像。</td><td>SOP类、传输语法、字符集、AE配置、TLS支持边界和失败处理。</td></tr><tr><td>DICOM MWL及设备执行回报</td><td>设备工作列表与实际执行状态。</td><td>设备支持范围、检查号与医嘱关系、执行中止和补录流程。</td></tr><tr><td>DICOM Storage Commitment</td><td>明确影像持久化接管。</td><td>承诺范围、保留时长、可检索性、通知和失败补传语义。</td></tr><tr><td>DICOMweb</td><td>查询、获取及写入标准影像对象。</td><td>QIDO-RS、WADO-RS、STOW-RS；鉴权、帧级访问、分页、错误和性能边界。</td></tr><tr><td>DICOM SR</td><td>测量与结构化结果交换。</td><td>适用模板、编码、单位、观察引用和图像定位；有测量需求时按适用SR模板实现。</td></tr><tr><td>DICOM SEG／显示对象</td><td>分割、关键图及显示相关结果。</td><td>源图像引用、几何、坐标系、帧关联和接收端支持程度，不能只测能否传输。</td></tr><tr><td>HL7 v2或医院既有规范接口</td><td>身份、就诊、医嘱、结果和费用事件。</td><td>实际消息清单及版本、字段发号域、回执、撤销、更正和对账，不以新平台迫使全院一次替换。</td></tr><tr><td>FHIR ServiceRequest／Task</td><td>检查申请与执行任务交换。</td><td>意图与状态、来源申请、任务责任、输入输出及院内扩展。</td></tr><tr><td>FHIR ImagingStudy／Observation／DiagnosticReport</td><td>影像索引、观察及报告交换。</td><td>引用关系、状态、版本、编码单位及适用Profile，不要求一条观察等于一份报告。</td></tr><tr><td>FHIR Provenance及审计机制</td><td>来源与生成主体记录。</td><td>派生关系与操作审计分开；日志保留与访问控制纳入合同。</td></tr><tr><td>IHE SWF.b／PIR／IOCM等</td><td>预约执行、身份核对和对象更正。</td><td>选择实际需要实现的角色与事务，按场景联测，不能笼统声称“IHE兼容”。</td></tr><tr><td>IHE AIW-I／AIR／AIRA</td><td>AI任务协作、结果交换与结果评估。</td><td>作为适用接口设计参考，固定实施版本并开展互操作测试；不替代临床评价。</td></tr><tr><td>术语与量纲</td><td>检查项目、解剖、征象、测量、诊断和方法。</td><td>本地及外部编码系统名称、版本、许可、映射关系与单位；保留不能映射的原词。</td></tr><tr><td>统一认证与消息服务</td><td>员工、临床、患者及运维入口。</td><td>会话、委托授权、过期撤销、患者隔离和回执；消息正文按最小必要披露。</td></tr></tbody></table></div><p>DICOMweb、SR、SEG、FHIR与IHE各承担不同层面的职责，不能互相替代。协议与资源事实依据见资料[1]—[13]；本表的系统分配及字段要求是本方案的实施设计。<a class="ref" href="#ref-1" aria-label="参考资料 1">[1]</a><a class="ref" href="#ref-4" aria-label="参考资料 4">[4]</a><a class="ref" href="#ref-5" aria-label="参考资料 5">[5]</a><a class="ref" href="#ref-6" aria-label="参考资料 6">[6]</a><a class="ref" href="#ref-10" aria-label="参考资料 10">[10]</a></p><aside class="callout note"><strong>版本策略</strong><div>FHIR以双方已支持的版本建立实施Profile，例如R4，不为了使用“最新版”而破坏既有接口。DICOM固定项目采用的标准版本和一致性声明；截至2026-10-11，本次访问的DICOM当前文档为2026d，IHE官方目录仍将AIW-I、AIR、AIRA列于Trial Implementation。正式采购应冻结版本并再次核查。<a class="ref" href="#ref-1" aria-label="参考资料 1">[1]</a><a class="ref" href="#ref-12" aria-label="参考资料 12">[12]</a></div></aside><h3>标准结果回写的最小验证链</h3><p>生成一个候选测量 → 写入适用的标准对象 → 由独立接收端解析 → 核对患者、原图、单位、位置、来源与评估状态 → 在原图上复现对应位置 → 按条件检索 → 导出并重新导入。仅证明能生成文件、能打开PDF或能导出Excel，不构成这条链路的验收。</p></section><section id="s16" class="section"><header class="section-header"><div class="meta"><span class="section-num">16</span><span class="eyebrow">技术实现</span></div><h2>知识、规则与临床语义实现</h2></header><p>知识服务同时维护“为什么这样处理”与“系统怎样执行”。证据文本、适用条件、逻辑表达式、动作和例外必须分开管理，避免将一段自然语言直接作为不可解释的阻断规则。国家卫生健康委的CDSS管理规范解读明确其临床辅助工具定位；本方案据此将临床知识治理与授权操作单独设为产品能力。<a class="ref" href="#ref-17" aria-label="参考资料 17">[17]</a></p><div class="table-scroll"><table class=""><thead><tr><th scope="col">规则维度</th><th scope="col">最低字段</th><th scope="col">含义</th></tr></thead><tbody><tr><td>标识与来源</td><td>rule_id、version、source、owner、approved_by。</td><td>标识稳定，版本、责任和证据可追溯。</td></tr><tr><td>适用范围</td><td>检查项目、文书类型、科室、阶段、人群、设备／协议、排除条件。</td><td>先判适用，再检查输入，再进行评价。</td></tr><tr><td>输入要求</td><td>字段路径、类型、单位、来源可信等级、时点与有效性。</td><td>缺失、不确定、相互矛盾分别表达。</td></tr><tr><td>评价方法</td><td>确定性比较、范围检查、结构校验或LLM辅助识别。</td><td>方法与任务风险匹配，复杂模型判断不能伪装为确定规则。</td></tr><tr><td>输出状态</td><td>PASS、FAIL、UNKNOWN、NOT_APPLICABLE；另有EXECUTION_ERROR。</td><td>无法判断与执行异常不计作通过；排除项不混入适用分母。</td></tr><tr><td>动作策略</td><td>仅提示、补充资料、人工复核、明确制度允许的签发阻断。</td><td>临床风险和系统动作分离，不凭分数高低统一决定动作。</td></tr><tr><td>例外与发布</td><td>允许覆盖角色、理由、紧急路径、测试集、生效和到期。</td><td>更改规则要测试和审批，可回滚但不覆盖已生成记录。</td></tr></tbody></table></div><h3>示例：申请侧别与已确认观察侧别不一致</h3><p>这是数据一致性规则，不是“模型判定哪一侧正确”。当申请与已确认观察均为明确单侧，且对应同一目标部位时才比较；双侧、多发、跨部位或信息不足进入相应分支。发现冲突后要求有权限人员核对医嘱、影像定位和文书，修正或说明合理例外。</p><pre><code>{
+  &quot;rule_id&quot;: &quot;QC.LATERALITY.CONSISTENCY&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;kind&quot;: &quot;deterministic_consistency&quot;,
+  &quot;applicability&quot;: {
+    &quot;phase&quot;: &quot;pre_sign&quot;,
+    &quot;same_target_anatomy&quot;: true,
+    &quot;explicit_unilateral_values_required&quot;: true
+  },
+  &quot;required_inputs&quot;: [
+    &quot;order.laterality&quot;,
+    &quot;confirmed_observation.laterality&quot;,
+    &quot;order.anatomy&quot;,
+    &quot;confirmed_observation.anatomy&quot;
+  ],
+  &quot;evaluation&quot;: {
+    &quot;missing_or_ambiguous&quot;: &quot;UNKNOWN&quot;,
+    &quot;excluded_scope&quot;: &quot;NOT_APPLICABLE&quot;,
+    &quot;matching_values&quot;: &quot;PASS&quot;,
+    &quot;conflicting_values&quot;: &quot;FAIL&quot;
+  },
+  &quot;action&quot;: {
+    &quot;FAIL&quot;: &quot;authorized_clinical_review_required&quot;,
+    &quot;UNKNOWN&quot;: &quot;request_clarification&quot;,
+    &quot;execution_error&quot;: &quot;technical_alert_not_pass&quot;
+  },
+  &quot;override&quot;: {
+    &quot;allowed&quot;: true,
+    &quot;role&quot;: &quot;authorized_signer&quot;,
+    &quot;reason_required&quot;: true
+  },
+  &quot;provenance&quot;: {
+    &quot;source&quot;: &quot;hospital_approved_policy_required&quot;,
+    &quot;approval_record&quot;: &quot;must_be_resolved_before_production&quot;
+  }
+}</code></pre><h3>检索增强生成的实际控制</h3><p>检索顺序建议为：权限过滤 → 项目、模态、人群、场景和有效期过滤 → 关键词与语义联合检索 → 重排 → 证据条款核对。模型只能使用核实通过的片段形成草稿，并输出引用。搜索相关不等于医学适用，语义相似也不等于同一检查方法。</p><div class="table-scroll"><table class=""><thead><tr><th scope="col">情况</th><th scope="col">系统处理</th><th scope="col">禁止行为</th></tr></thead><tbody><tr><td>没有适用规则</td><td>返回未覆盖范围与缺失证据；请求补充或进入人工判断。</td><td>用一般常识编造院内标准。</td></tr><tr><td>检索到错误项目</td><td>核对模态、方法、部位和适用人群，移出正式候选并记录误召回。</td><td>因为相似度高直接使用。</td></tr><tr><td>规则冲突</td><td>同时呈现来源、范围和版本，交指定临床责任人裁定。</td><td>由LLM无依据选择“较新”或“更严格”的规则。</td></tr><tr><td>证据已经过期</td><td>停止以其触发新的自动动作，保留历史适用记录并发维护任务。</td><td>直接删除旧证据，导致历史报告不可解释。</td></tr><tr><td>生成内容无证据</td><td>删除候选中的无依据语句或返回失败，保留问题类型。</td><td>让引用链接仅作装饰，正文与证据不相符。</td></tr></tbody></table></div><p>模板组织优先按“检查项目＋临床场景＋必要观察集合”配置，而非为每一种自由文本创建一个模板。图谱主要表达检查—部位—征象—分级—证据—建议之间的受控关联；初期可用关系表实现，确认多跳检索确有价值后再引入图数据库。</p></section><section id="s17" class="section"><header class="section-header"><div class="meta"><span class="section-num">17</span><span class="eyebrow">技术实现</span></div><h2>软件组件与关键实现路径</h2></header><h3>参考技术组合</h3><p>以下是便于研发落地的参考组合，不是指定厂商，也不是已验证可直接临床部署的软件包。应先核查许可、现有系统兼容性、终端性能和运维能力，再冻结组件及版本。</p><div class="table-scroll"><table class=""><thead><tr><th scope="col">组件</th><th scope="col">建议实现方式</th><th scope="col">选型或工程要求</th></tr></thead><tbody><tr><td>岗位Web应用</td><td>TypeScript前端；业务工作台与诊断阅片模块通过明确上下文事件对接。</td><td>不重做通用UI之外的全部医学渲染。阅片可评估OHIF的扩展框架和DICOMweb接入能力。<a class="ref" href="#ref-22" aria-label="参考资料 22">[22]</a></td></tr><tr><td>RIS与报告业务服务</td><td>事务型业务服务，清晰划分申请、预约、执行、报告、任务和权限边界。</td><td>先模块化、后按负荷拆分；不用LLM维护核心状态和业务约束。</td></tr><tr><td>影像接入与归档</td><td>既有合规PACS/VNA或经工程化的DICOM服务。</td><td>原型可评估Orthanc，其官方资料覆盖DICOM、接口、备份和存储承诺等；企业高可用与产品责任需另行构建。<a class="ref" href="#ref-23" aria-label="参考资料 23">[23]</a></td></tr><tr><td>长期流程服务</td><td>可靠工作流引擎或等效持久状态机。</td><td>可评估Temporal的持久工作流与失败恢复机制；支付、通知、签发等外部操作仍须幂等与授权。<a class="ref" href="#ref-24" aria-label="参考资料 24">[24]</a></td></tr><tr><td>业务与对象存储</td><td>关系数据库保存交易与版本，DICOM对象归档保存像素，检索与向量索引提供查询。</td><td>向量库、缓存及分析库不作为正式报告或身份权威源。</td></tr><tr><td>知识与规则服务</td><td>结构化元数据＋规则执行器＋检索服务＋版本化模板。</td><td>将证据段落、规则逻辑和文书生成分开测试。</td></tr><tr><td>AI运行服务</td><td>独立CPU/GPU工作池、模型适配器、任务校验器和模型登记。</td><td>语言模型与影像模型分别评测；通过统一任务契约接入，不锁定单一厂商。</td></tr><tr><td>集成与可观测性</td><td>接口网关、消息队列、事务发件箱、指标日志与追踪。</td><td>任务只传必要引用，不在消息总线广播完整影像或患者全文。</td></tr></tbody></table></div><h3>开发顺序：先可运行的业务骨架，再扩智能能力</h3><div class="flow"><div class="flow-step"><span>01</span><strong>业务与身份</strong><small>状态机、权限和接口</small></div><div class="flow-step"><span>02</span><strong>影像与记录</strong><small>归档、阅片和报告</small></div><div class="flow-step"><span>03</span><strong>统一任务</strong><small>事件、快照和异常</small></div><div class="flow-step"><span>04</span><strong>规则与证据</strong><small>适用性、检索、验证</small></div><div class="flow-step"><span>05</span><strong>AI接入</strong><small>候选、确认与反馈</small></div><div class="flow-step"><span>06</span><strong>临床上线</strong><small>评测、演练和观察</small></div></div><h3>报告生成管线</h3><p>进入报告任务时，读取特定版本的申请、影像清单、已确认观察、医生文本与模板。先确定必需段落和缺项，再产生文字草稿；独立校验器检查结构、引用、数值、单位、否定和侧别。验证未通过时可以在限定次数内修复格式，但不能通过添加未经证实的事实“修复”临床缺项。最终内容进入可编辑草稿，由医生按工作流程确认。</p><h3>图像模型管线</h3><p>适用性判定 → 检查输入清单及图像可解码性 → 按已验证配置预处理 → 推理 → 后处理 → 空间坐标回映 → 输出结构与单位校验 → 保存源结果和候选观察。输入尺寸改变、重采样、裁剪及坐标变换须记录。检测结果为空仍需要有效完成状态和模型覆盖说明。</p><h3>有限智能体循环（示意伪代码）</h3><pre><code>context = load_authorized_snapshot(task.patient_id, task.input_version)
+if not eligible(task, context):
+    finish_as_not_applicable_or_missing_input()
+else:
+    for step in range(task.max_steps):
+        enforce_deadline_and_budget(task)
+        proposed_call = plan_next_allowed_tool(context)
+        result = call_tool_after_policy_check(proposed_call)
+        store_provenance(result)
+        checked = validate_schema_evidence_and_business_rules(result)
+        if checked.ready_for_review:
+            save_candidate(checked, input_version=task.input_version)
+            create_review_task_if_required()
+            break
+    else:
+        finish_as_incomplete_and_route_to_human()
+# 报告签发、医嘱变更和对外临床发布不由此循环直接执行。</code></pre><p>不要在未限定适用范围之前决定模型大小和型号。选型以目标任务的本地测试为依据，分别检查影像算法、人机团队、结构化抽取、规则检索、中文报告与复杂异常，不以通用榜单或更大参数量替代验证。</p></section>

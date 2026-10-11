@@ -1,0 +1,68 @@
+<section id="s25" class="section"><header class="section-header"><div class="meta"><span class="section-num">25</span><span class="eyebrow">实施附录</span></div><h2>数据与事件样例、术语说明</h2></header><p>以下JSON是本方案的内部领域对象示意，不是可直接提交的FHIR资源或完整DICOM对象。所有标识与测量均为演示数据，不包含真实患者；实际实现需增加认证、字段校验、版本兼容、可靠签名及必要标准映射。</p><h3>候选观察对象</h3><pre><code>{
+  &quot;observation_id&quot;: &quot;demo-observation-001&quot;,
+  &quot;patient_ref&quot;: &quot;demo-patient-001&quot;,
+  &quot;study_uid&quot;: &quot;2.25.123456789012345678901234567890123456&quot;,
+  &quot;input_manifest_version&quot;: &quot;manifest-3&quot;,
+  &quot;status&quot;: &quot;CANDIDATE&quot;,
+  &quot;concept&quot;: {
+    &quot;system&quot;: &quot;local-demo&quot;,
+    &quot;code&quot;: &quot;lung-nodule&quot;,
+    &quot;display&quot;: &quot;肺结节候选&quot;
+  },
+  &quot;measurement&quot;: {
+    &quot;value&quot;: 8.2,
+    &quot;unit&quot;: &quot;mm&quot;,
+    &quot;method&quot;: &quot;demo_long_axis&quot;,
+    &quot;uncertainty&quot;: &quot;not_established&quot;
+  },
+  &quot;evidence&quot;: [
+    {
+      &quot;series_uid&quot;: &quot;2.25.123456789012345678901234567890123457&quot;,
+      &quot;sop_instance_uid&quot;: &quot;2.25.123456789012345678901234567890123458&quot;,
+      &quot;frame_number&quot;: 1,
+      &quot;geometry_ref&quot;: &quot;demo-geometry-001&quot;
+    }
+  ],
+  &quot;provenance&quot;: {
+    &quot;source_type&quot;: &quot;AI&quot;,
+    &quot;model_id&quot;: &quot;demo-model&quot;,
+    &quot;model_version&quot;: &quot;demo-1&quot;,
+    &quot;preprocessing_version&quot;: &quot;demo-1&quot;,
+    &quot;created_at&quot;: &quot;2026-10-11T10:00:00+08:00&quot;
+  },
+  &quot;confidence&quot;: {
+    &quot;score&quot;: null,
+    &quot;meaning&quot;: &quot;not_provided&quot;,
+    &quot;calibration_version&quot;: null
+  },
+  &quot;assessment&quot;: {
+    &quot;status&quot;: &quot;NOT_EVALUATED&quot;,
+    &quot;reviewer&quot;: null
+  },
+  &quot;limitations&quot;: [
+    &quot;演示对象，不构成诊断&quot;,
+    &quot;未经医生确认&quot;,
+    &quot;不据此自动生成随访或治疗建议&quot;
+  ]
+}</code></pre><h3>影像输入更新事件</h3><pre><code>{
+  &quot;event_id&quot;: &quot;demo-event-002&quot;,
+  &quot;event_type&quot;: &quot;imaging.manifest.updated&quot;,
+  &quot;schema_version&quot;: &quot;1.0&quot;,
+  &quot;aggregate_id&quot;: &quot;demo-study-001&quot;,
+  &quot;aggregate_version&quot;: 3,
+  &quot;occurred_at&quot;: &quot;2026-10-11T10:05:00+08:00&quot;,
+  &quot;source&quot;: &quot;imaging-gateway&quot;,
+  &quot;correlation_id&quot;: &quot;demo-workflow-001&quot;,
+  &quot;payload&quot;: {
+    &quot;previous_manifest&quot;: &quot;manifest-2&quot;,
+    &quot;current_manifest&quot;: &quot;manifest-3&quot;,
+    &quot;reason&quot;: &quot;late_series_arrival&quot;,
+    &quot;report_status&quot;: &quot;SIGNED&quot;
+  },
+  &quot;required_behavior&quot;: [
+    &quot;mark_previous_input_jobs_as_potentially_stale&quot;,
+    &quot;create_authorized_review_task_if_needed&quot;,
+    &quot;do_not_overwrite_signed_report&quot;
+  ],
+  &quot;privacy_note&quot;: &quot;消息仅传必要引用；消费方取数时再次鉴权&quot;
+}</code></pre><h3>重要工程约束</h3><p>事件表示已经发生的事实，不等于执行命令。消息可能重复或乱序到达，消费方使用事件ID与聚合版本去重，并在业务提交时复核状态；需要外部通知时使用单独的幂等业务键。取消AI任务是取消未来工作，不删除已经存在的临床记录。回放日志可以重建索引和观察历史，但不能无审查重复执行给药、签发或消息发送。</p><h3>术语速查</h3><div class="table-scroll"><table class=""><thead><tr><th scope="col">术语</th><th scope="col">本方案中的含义</th></tr></thead><tbody><tr><td>RIS</td><td>管理申请、预约、登记、执行、报告及影像科运营的放射信息系统。</td></tr><tr><td>PACS</td><td>管理影像接收、存储、通信、调阅、显示与归档的系统。</td></tr><tr><td>AI Native</td><td>本文的原生设计定义：AI按场景进入任务、数据、交互和治理，而非单独工具按钮。</td></tr><tr><td>VNA</td><td>以中立对象和接口组织影像归档的能力；仍需实际验证迁出及接收兼容性。</td></tr><tr><td>临床观察</td><td>经相应人工确认、具有来源与版本的所见或测量，不一定等于诊断。</td></tr><tr><td>候选观察</td><td>待复核的模型或草稿输出，不能冒充正式结果。</td></tr><tr><td>场景包</td><td>适用范围、输入、模型、规则、界面、异常与验证一起交付的可复制单元。</td></tr><tr><td>影子运行</td><td>模型输出被记录用于验证，但不影响实际临床决策的运行方式。</td></tr><tr><td>可追溯性</td><td>能够解释记录由谁、何时、依据哪些数据及版本生成或修改。</td></tr><tr><td>幂等</td><td>同一业务请求或重复消息不会造成重复的业务副作用。</td></tr><tr><td>RPO／RTO</td><td>可接受数据恢复点损失窗口／从中断到恢复目标业务所需时间。</td></tr><tr><td>SLO</td><td>在明确测量方式、时间窗口和服务范围下设置的服务目标。</td></tr></tbody></table></div><aside class="callout definition"><strong>完整系统的最终交付定义</strong><div>医院在约定范围内可以完成从申请到临床结果及后续任务的完整业务；AI在获准场景默认提供有依据的辅助；所有关键结果可追溯、异常可处置、故障可恢复、能力可扩展、数据可迁出，并有持续负责知识、模型、质量和运维的团队。</div></aside></section><section id="s26" class="section"><header class="section-header"><div class="meta"><span class="section-num">26</span><span class="eyebrow">参考资料</span></div><h2>依据与使用说明</h2></header><p>本方案为独立产品定义与建设设计。正文中的“应”“必须”“建议”描述本方案的设计约束或拟议验收条件；只有明确引用的标准与政策事实才来自相应资料。模块划分、流程、对象模型、参考架构、容量假设、SLO和实施周期由本方案提出，不是现成产品已经实现的证明。</p><p>资料核查日期：<b>2026年10月11日</b>。已选择官方标准、监管与卫生管理渠道及组件原作者文档。标准、政策、接口和许可在正式签约与上线时应重新核查，并固定适用版本；未逐条读取或确认的附件不用于推导具体临床阈值。</p><div class="references"><article id="ref-1"><span class="ref-no">01</span><div><a href="https://dicom.nema.org/medical/dicom/current/output/chtml/part18/PS3.18.html" target="_blank" rel="noopener noreferrer">DICOM PS3.18：Web Services</a><p>DICOM官方标准；本次访问为2026d。用于DICOMweb服务与版本边界。</p></div></article><article id="ref-2"><span class="ref-no">02</span><div><a href="https://dicom.nema.org/medical/dicom/current/output/chtml/part04/chapter_K.html" target="_blank" rel="noopener noreferrer">DICOM PS3.4：Basic Worklist Management</a><p>DICOM官方标准；用于设备工作列表范围。</p></div></article><article id="ref-3"><span class="ref-no">03</span><div><a href="https://dicom.nema.org/medical/dicom/current/output/chtml/part04/chapter_J.html" target="_blank" rel="noopener noreferrer">DICOM PS3.4：Storage Commitment</a><p>DICOM官方标准；说明存储接收与持久化承诺的区别。</p></div></article><article id="ref-4"><span class="ref-no">04</span><div><a href="https://dicom.nema.org/medical/dicom/current/output/chtml/part16/chapter_A.html" target="_blank" rel="noopener noreferrer">DICOM PS3.16：Structured Reporting Templates</a><p>DICOM官方标准；用于结构化结果与适用模板。</p></div></article><article id="ref-5"><span class="ref-no">05</span><div><a href="https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_A.51.html" target="_blank" rel="noopener noreferrer">DICOM PS3.3：Segmentation IOD</a><p>DICOM官方标准；用于分割对象定义，具体几何与接收端能力需实现验证。</p></div></article><article id="ref-6"><span class="ref-no">06</span><div><a href="https://hl7.org/fhir/R4/servicerequest.html" target="_blank" rel="noopener noreferrer">HL7 FHIR R4：ServiceRequest</a><p>HL7官方规范；用于申请与任务的边界。R4为兼容性示例，不称为最新版本。</p></div></article><article id="ref-7"><span class="ref-no">07</span><div><a href="https://www.hl7.org/fhir/R4/imagingstudy.html" target="_blank" rel="noopener noreferrer">HL7 FHIR R4：ImagingStudy</a><p>HL7官方规范；ImagingStudy不存储DICOM实例像素。</p></div></article><article id="ref-8"><span class="ref-no">08</span><div><a href="https://www.hl7.org/fhir/R4/observation.html" target="_blank" rel="noopener noreferrer">HL7 FHIR R4：Observation</a><p>HL7官方规范；用于观察与测量交换。</p></div></article><article id="ref-9"><span class="ref-no">09</span><div><a href="https://www.hl7.org/fhir/R4/diagnosticreport.html" target="_blank" rel="noopener noreferrer">HL7 FHIR R4：DiagnosticReport</a><p>HL7官方规范；用于诊断报告及其引用。</p></div></article><article id="ref-10"><span class="ref-no">10</span><div><a href="https://www.hl7.org/fhir/R4/task.html" target="_blank" rel="noopener noreferrer">HL7 FHIR R4：Task</a><p>HL7官方规范；用于请求执行状态与任务交换。</p></div></article><article id="ref-11"><span class="ref-no">11</span><div><a href="https://www.hl7.org/fhir/R4/provenance.html" target="_blank" rel="noopener noreferrer">HL7 FHIR R4：Provenance</a><p>HL7官方规范；用于来源与派生关系，不替代全部操作审计。</p></div></article><article id="ref-12"><span class="ref-no">12</span><div><a href="https://profiles.ihe.net/RAD/index.html" target="_blank" rel="noopener noreferrer">IHE Radiology官方技术框架目录</a><p>核查了SWF.b等正式框架与AIW-I、AIR、AIRA的Trial Implementation状态。</p></div></article><article id="ref-13"><span class="ref-no">13</span><div><a href="https://www.ihe.net/uploadedFiles/Documents/Radiology/IHE_RAD_Suppl_AIRA.pdf" target="_blank" rel="noopener noreferrer">IHE AIRA：AI Result Assessment for Imaging</a><p>Revision 1.1，2025-06-12，Trial Implementation。评估记录交换不等于评估正确性保证。</p></div></article><article id="ref-14"><span class="ref-no">14</span><div><a href="https://wjw.wuhan.gov.cn/zwgk_28/zc/qtbmwj/202001/t20200114_803350.shtml" target="_blank" rel="noopener noreferrer">国家卫生健康委：医疗质量安全核心制度要点</a><p>国卫医发〔2018〕8号；武汉市卫生健康委官方公开文本。用于查对、危急值、病历和信息安全的制度背景。</p></div></article><article id="ref-15"><span class="ref-no">15</span><div><a href="https://www.nhc.gov.cn/yzygj/c100068/202405/7d1d82090e8b44d2af3339d7ee8c7cca.shtml" target="_blank" rel="noopener noreferrer">国家卫生健康委：急诊医学等6个专业医疗质量控制指标（2024年版）</a><p>国卫办医政函〔2024〕150号，包含放射影像专业指标。本次引用通知范围，未逐条复述附件阈值。</p></div></article><article id="ref-16"><span class="ref-no">16</span><div><a href="https://www.nhc.gov.cn/yzygj/c100068/202506/c68abee7c54b4651a774cd533761780b.shtml" target="_blank" rel="noopener noreferrer">国家卫生健康委：进一步加强医疗机构电子病历信息使用管理</a><p>国卫办医政函〔2025〕262号。用于分级访问、外部服务商管理与全流程留痕。</p></div></article><article id="ref-17"><span class="ref-no">17</span><div><a href="https://www.nhc.gov.cn/yzygj/c100068/202307/5ada3e35309a4e0d9d4fcb8b59c781e8.shtml" target="_blank" rel="noopener noreferrer">国家卫生健康委：CDSS应用管理规范政策解读</a><p>2023-07-28官方解读；用于临床辅助定位。本次未逐条引用其规范附件。</p></div></article><article id="ref-18"><span class="ref-no">18</span><div><a href="https://www.miit.gov.cn/jgsj/zfs/fl/art/2022/art_515a4b20c12f430eab54bb4f56d89f56.html" target="_blank" rel="noopener noreferrer">中华人民共和国个人信息保护法（工信部公开文本）</a><p>用于医疗健康敏感信息、必要性和数据处理控制；具体法律适用需项目核查。</p></div></article><article id="ref-19"><span class="ref-no">19</span><div><a href="https://mpa.hunan.gov.cn/mpa/yszx/jssp/jsbzx/202205/t20220507_24466554.html" target="_blank" rel="noopener noreferrer">人工智能医疗器械注册审查指导原则发布通告（2022年第8号）</a><p>湖南省药品审评官方转载；本次核查发布信息，不声称完成全部注册条款适用审查。</p></div></article><article id="ref-20"><span class="ref-no">20</span><div><a href="https://ydcmdei.org.cn/article/975" target="_blank" rel="noopener noreferrer">人工智能医疗器械注册审查指导原则2026年修订版征求意见通知</a><p>器械长三角分中心官方转载；2026-09-14发布，反馈截止2026-10-12。仅作草案状态和版本跟踪。</p></div></article><article id="ref-21"><span class="ref-no">21</span><div><a href="https://www.imdrf.org/sites/default/files/2025-02/IMDRF_AIML%20WG_GMLP_N88%20Final.pdf" target="_blank" rel="noopener noreferrer">IMDRF：Good Machine Learning Practice，N88 FINAL:2025</a><p>国际医疗器械监管机构论坛指导原则；用于验证与监测框架，不构成本方案获官方认可。</p></div></article><article id="ref-22"><span class="ref-no">22</span><div><a href="https://docs.ohif.org/" target="_blank" rel="noopener noreferrer">OHIF官方开发文档</a><p>用于说明可扩展Web阅片、DICOMweb和影像显示框架；临床用途需另行验证。</p></div></article><article id="ref-23"><span class="ref-no">23</span><div><a href="https://orthanc.uclouvain.be/book/" target="_blank" rel="noopener noreferrer">Orthanc官方文档</a><p>用于DICOM接入、接口与工程候选组件说明；并非完整企业PACS交付承诺。</p></div></article><article id="ref-24"><span class="ref-no">24</span><div><a href="https://docs.temporal.io/workflow-execution" target="_blank" rel="noopener noreferrer">Temporal：Workflow Execution官方文档</a><p>用于持久工作流与故障恢复的参考实现；业务副作用仍需应用自身控制。</p></div></article></div><aside class="callout note"><strong>实施前须补齐的现场参数</strong><div>医院检查量与模态结构、设备与既有系统接口、历史数据规模、诊断工作站范围、院内危急值与审核制度、数据保存与外发要求、算法获准用途、人员与预算。上述参数影响配置与建设排期，但不改变本方案的整体产品定义。</div></aside></section><footer class="footer">AI Native RIS/PACS 系统总体方案 · v1.0<br>临床流程完整 · AI按需受控 · 数据可追溯 · 服务可持续</footer></main></div><button id="top-button" class="to-top" aria-label="返回顶部">↑</button>

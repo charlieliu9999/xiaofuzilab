@@ -1,13 +1,13 @@
-import { defineConfig } from "astro/config";
-import sitemap from "@astrojs/sitemap";
+import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
+import { prepareAiNotes, getAiNotes, aiNotesIntegration } from './scripts/ai-notes.mjs';
 
-// https://astro.build/config
+prepareAiNotes();
 export default defineConfig({
-  site: "https://charlieliu.blog",
-  integrations: [sitemap()],
-  markdown: {
-    shikiConfig: {
-      theme: "github-dark",
-    },
-  },
+  site: 'https://charlieliu.blog',
+  integrations: [
+    sitemap({ customPages: getAiNotes().map(note => new URL(note.href, 'https://charlieliu.blog').href) }),
+    aiNotesIntegration(),
+  ],
+  markdown: { shikiConfig: { theme: 'github-dark' } },
 });

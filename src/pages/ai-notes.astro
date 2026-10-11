@@ -1,64 +1,19 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-
-const rawPosts = import.meta.glob("../content/posts/*.md", { eager: true });
-const posts = (Object.values(rawPosts) as any[])
-  .filter((post) => !post.frontmatter.draft)
-  .sort((a, b) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContentChannels from '../components/ContentChannels.astro';
+import AiNoteCards from '../components/AiNoteCards.astro';
+import { getAiNotes } from '../../scripts/ai-notes.mjs';
+const count = getAiNotes().length;
 ---
-
-<BaseLayout>
-  <header class="channel-header animate-on-scroll">
-    <p class="eyebrow">AI INTERPRETATION · 人提出问题，AI 展开研究</p>
-    <h1>AI 生成的解读</h1>
-    <p>围绕一个真实任务，让 AI 搜集、比较、推演，再由我筛选和校正。成果可以是一篇文章，也可以是演示文稿、图像或研究备忘录。</p>
+<BaseLayout title="HTML 专题 · Charlie Liu" description="完整HTML方案、可视化研究报告与独立专题页面。">
+  <header class="channel-header">
+    <p class="eyebrow">AI NOTES · 完整方案与独立页面</p>
+    <h1>HTML 专题</h1>
+    <p>把完整方案和研究成果单独展开。保留每份HTML的目录、图表与交互，不再与博客文章列表混排。</p>
   </header>
-
-  <div class="format-rail" aria-label="内容形式">
-    <span class="active">文章</span><span>PPT</span><span>图片</span><span>研究备忘录</span>
-  </div>
-
-  <section class="research-list">
-    <a class="research-entry animate-on-scroll" href="/ai-notes/pacs/">
-      <span class="entry-number">◆</span>
-      <div>
-        <div class="entry-meta"><span>HTML</span><time>2026-10-11</time></div>
-        <h2>AI Native PACS · 漫画图文完整版</h2>
-        <p>7 张漫画图解：从岗位流程到系统建设，适合手机阅读与打印。</p>
-      </div>
-      <span class="entry-arrow">↗</span>
-    </a>
-    <a class="research-entry animate-on-scroll" href="/ai-notes/pacs-review/">
-      <span class="entry-number">◆</span>
-      <div>
-        <div class="entry-meta"><span>HTML</span><time>2026-10-11</time></div>
-        <h2>AI 原生影像平台 · 原文评审与建设方案</h2>
-        <p>28 条修订清单 · 20 个验收用例 · 90 天 MVP 路线。</p>
-      </div>
-      <span class="entry-arrow">↗</span>
-    </a>
-  </section>
-
-  <section class="research-list">
-    <a class="research-entry animate-on-scroll" href="/ai-notes/ris-pacs-blueprint/">
-      <span class="entry-number">◆</span>
-      <div>
-        <div class="entry-meta"><span>HTML</span><time>2026-10-11</time></div>
-        <h2>AI Native RIS/PACS 系统总体方案</h2>
-        <p>最新方案：从系统定义、业务流程到技术架构、分期实施的完整蓝图。</p>
-      </div>
-      <span class="entry-arrow">↗</span>
-    </a>
-    {posts.map((post, index) => (
-      <a class="research-entry animate-on-scroll" href={`/posts/${post.frontmatter.slug}`}>
-        <span class="entry-number">{String(index + 1).padStart(2, "0")}</span>
-        <div>
-          <div class="entry-meta"><span>ARTICLE</span><time>{new Date(post.frontmatter.date).toLocaleDateString("zh-CN")}</time></div>
-          <h2>{post.frontmatter.title}</h2>
-          <p>{post.frontmatter.description}</p>
-        </div>
-        <span class="entry-arrow">↗</span>
-      </a>
-    ))}
-  </section>
+  <ContentChannels />
+  <div class="topics-heading"><h2>全部专题</h2><span>{count} 份 HTML</span></div>
+  <AiNoteCards />
+  <p class="channel-note">选择“新标签页打开”可保留当前目录；也可以在当前页阅读。每份专题底部都有“HTML专题、博客文章、收藏原文、首页”的固定返回入口。专题中的原始来源仍保留原站链接。</p>
+  <div class="channel-back"><a href="/">← 返回首页</a><a href="/posts/">阅读博客文章 →</a><a href="/collection/">查看原文收藏 →</a></div>
 </BaseLayout>

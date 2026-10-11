@@ -7,12 +7,11 @@ export const SITE = {
   lang: "zh-CN",
   siteUrl: "https://charlieliu.blog",
 };
-
 export const NAV = [
   { label: "首页", href: "/" },
-  { label: "文章", href: "/posts" },
-  { label: "收藏", href: "/collection" },
-  { label: "AI 解读", href: "/ai-notes" },
+  { label: "文章", href: "/posts/" },
+  { label: "HTML 专题", href: "/ai-notes/" },
+  { label: "收藏", href: "/collection/" },
   { label: "发布", href: "/publish" },
   { label: "关于", href: "/about" },
 ];
