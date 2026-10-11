@@ -1,24 +1,27 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContentChannels from '../components/ContentChannels.astro';
+import { collection } from '../data/collection.mjs';
+const groups = [
+  { title: '原文与项目', items: collection.filter(item => item.status === 'readable') },
+  { title: '历史收藏 · 访问待核验', items: collection.filter(item => item.status !== 'readable') },
+];
 ---
-
-<BaseLayout>
-  <header class="channel-header animate-on-scroll">
-    <p class="eyebrow">COLLECTION · 值得反复阅读</p>
-    <h1>收藏</h1>
-    <p>这里保存我遇到的好文章、链接与材料。收藏不是终点，我会补上一段自己的判断，让每个链接进入长期思考。</p>
-  </header>
-
-  <section class="empty-ledger animate-on-scroll">
-    <span class="ledger-no">No. 000</span>
-    <div>
-      <h2>收藏夹正在整理</h2>
-      <p>第一批内容尚未公开。以后每条收藏会包含来源、主题、原文链接，以及“为什么值得读”。</p>
-    </div>
-  </section>
-
-  <aside class="content-guide">
-    <span>收录格式</span>
-    <p><strong>标题</strong> · 来源与作者 · 原文链接 · 标签 · Charlie 的批注</p>
-  </aside>
+<BaseLayout title="原文收藏 · Charlie Liu" description="收藏过的原始文章、项目与资料，直接打开可阅读的原站页面。">
+  <header class="channel-header"><p class="eyebrow">COLLECTION · 保留原始来源</p><h1>原文收藏</h1><p>这里保存分享过的相关原文和项目链接；本站的文章在“文章”，完整HTML方案在“HTML专题”。点击收藏将打开原站，不复制或改写原文。</p></header>
+  <ContentChannels />
+  {groups.filter(group => group.items.length).map(group => (
+    <section><div class="topics-heading"><h2>{group.title}</h2><span>{group.items.length} 条</span></div>
+      <div class="bookmark-list">{group.items.map(item => (
+        <article class="bookmark">
+          <small>{item.category}</small><h3><a href={item.url} target="_blank" rel="noopener noreferrer">{item.title} ↗</a></h3>
+          <p>{item.description}</p>
+          <a class="source-url" href={item.url} target="_blank" rel="noopener noreferrer">{item.url}</a>
+          <p><small>{item.accessNote} 核查日期：{item.checkedAt}</small></p>
+        </article>
+      ))}</div>
+    </section>
+  ))}
+  <p class="channel-note">访问情况以核查时为准；原站仍可能改变地址、登录要求或共享设置。未核验的历史链接单独列出，不标记为“可公开阅读”。</p>
+  <div class="channel-back"><a href="/">← 返回首页</a><a href="/ai-notes/">查看HTML专题 →</a></div>
 </BaseLayout>

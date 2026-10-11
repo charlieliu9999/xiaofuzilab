@@ -1,0 +1,36 @@
+<script>
+(() => {
+  const nav = document.querySelector('.sidebar');
+  const menu = document.getElementById('menu-button');
+  const links = [...document.querySelectorAll('.toc-link')];
+  const blocks = [...document.querySelectorAll('.section')];
+  const progress = document.querySelector('.progress');
+  if(menu) menu.addEventListener('click', () => {
+    const isOpen = nav.classList.toggle('open');
+    menu.setAttribute('aria-expanded', String(isOpen));
+  });
+  links.forEach(a => a.addEventListener('click', () => {
+    nav.classList.remove('open');
+    if(menu) menu.setAttribute('aria-expanded','false');
+  }));
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') {nav.classList.remove('open'); if(menu) menu.setAttribute('aria-expanded','false');}
+  });
+  document.getElementById('print-button').addEventListener('click', () => window.print());
+  document.getElementById('top-button').addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
+  const update = () => {
+    const max = document.documentElement.scrollHeight-window.innerHeight;
+    progress.style.width = (max>0?Math.min(100,window.scrollY/max*100):0)+'%';
+    let current=blocks[0];
+    for(const s of blocks) { if(s.getBoundingClientRect().top <= 130) current=s; else break; }
+    links.forEach(a => {
+      const active = current && a.getAttribute('href') === '#'+current.id;
+      a.classList.toggle('active',Boolean(active));
+      if(active) a.setAttribute('aria-current','location'); else a.removeAttribute('aria-current');
+    });
+  };
+  let scheduled=false;
+  window.addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{update();scheduled=false;});}},{passive:true});
+  window.addEventListener('resize',update); update();
+})();
+</script></body></html>

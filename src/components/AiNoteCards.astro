@@ -1,0 +1,17 @@
+---
+import { getAiNotes } from '../../scripts/ai-notes.mjs';
+import '../styles/channels.css';
+const { limit } = Astro.props;
+const allNotes = getAiNotes();
+const notes = typeof limit === 'number' ? allNotes.slice(0, limit) : allNotes;
+---
+<div class="topic-grid">
+  {notes.map(note => (
+    <article class="topic-card">
+      <div class="topic-meta"><span>{note.category} · HTML</span>{note.date && <time datetime={note.date}>{note.date}</time>}</div>
+      <h3><a href={note.href} target="_blank" rel="noopener noreferrer" aria-label={`${note.title}（新标签页打开）`}>{note.title}</a></h3>
+      <p>{note.description}</p>
+      <div class="topic-actions"><a class="topic-primary" href={note.href} target="_blank" rel="noopener noreferrer">新标签页打开 ↗</a><a href={note.href}>在当前页阅读 →</a></div>
+    </article>
+  ))}
+</div>
