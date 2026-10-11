@@ -19,6 +19,27 @@ const posts = (Object.values(rawPosts) as any[])
   </div>
 
   <section class="research-list">
+    <a class="research-entry animate-on-scroll" href="/ai-notes/pacs/">
+      <span class="entry-number">◆</span>
+      <div>
+        <div class="entry-meta"><span>HTML</span><time>2026-10-11</time></div>
+        <h2>AI Native PACS · 漫画图文完整版</h2>
+        <p>7 张漫画图解：从岗位流程到系统建设，适合手机阅读与打印。</p>
+      </div>
+      <span class="entry-arrow">↗</span>
+    </a>
+    <a class="research-entry animate-on-scroll" href="/ai-notes/pacs-review/">
+      <span class="entry-number">◆</span>
+      <div>
+        <div class="entry-meta"><span>HTML</span><time>2026-10-11</time></div>
+        <h2>AI 原生影像平台 · 原文评审与建设方案</h2>
+        <p>28 条修订清单 · 20 个验收用例 · 90 天 MVP 路线。</p>
+      </div>
+      <span class="entry-arrow">↗</span>
+    </a>
+  </section>
+
+  <section class="research-list">
     {posts.map((post, index) => (
       <a class="research-entry animate-on-scroll" href={`/posts/${post.frontmatter.slug}`}>
         <span class="entry-number">{String(index + 1).padStart(2, "0")}</span>
