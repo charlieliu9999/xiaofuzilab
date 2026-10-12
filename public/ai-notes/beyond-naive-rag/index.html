@@ -1,0 +1,97 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="date" content="2026-10-13"><meta name="description" content="Beyond Naive RAG 中文学习文章：证据覆盖、多种表示、推理检索与医学产品实验。"><title>超越简单 RAG：从相似文本检索到可验证的证据系统</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f5f3ee;color:#26313a;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.9}header,main,footer{max-width:920px;margin:auto;padding:32px 24px}header{padding-top:54px;border-bottom:1px solid #d6dedb}h1{font-size:clamp(28px,5vw,42px);line-height:1.4;margin:12px 0}h2{font-size:26px;line-height:1.5;margin:52px 0 20px;border-left:5px solid #14756c;padding-left:15px;scroll-margin-top:20px}h3{font-size:21px;margin-top:28px}.eyebrow{font-size:13px;letter-spacing:2px;color:#14756c;font-weight:700}a{color:#126b72;text-underline-offset:4px;overflow-wrap:anywhere}p{margin:18px 0}.intro,nav,details{border:1px solid #d6dedb;border-radius:12px;background:#fff;padding:18px 22px}nav ol{margin:0;padding-left:22px}nav a{text-decoration:none}li{margin:8px 0}.scroll{overflow-x:auto;margin:26px 0;border:1px solid #d6dedb;border-radius:8px;background:#fff}table{width:100%;min-width:580px;border-collapse:collapse;font-size:15px}th,td{text-align:left;vertical-align:top;padding:13px 15px;border-bottom:1px solid #d6dedb}th{background:#e6efeb}details{margin:14px 0}summary{font-weight:650;cursor:pointer}details p{margin-bottom:0}footer{font-size:14px;color:#53636c;border-top:1px solid #d6dedb}.actions{display:flex;gap:14px;flex-wrap:wrap}@media(max-width:600px){header,main,footer{padding-left:18px;padding-right:18px}h2{font-size:23px}nav,details,.intro{padding:16px}}@media print{body{background:white}.actions,nav{display:none}header,main,footer{max-width:none;padding:12px 0}details{break-inside:avoid}details p{display:block}.scroll{overflow:visible}table{min-width:0}h2{break-after:avoid}a{color:inherit}}</style></head><body><header><div class="eyebrow">AI PRODUCT BUILDER · RAG 学习笔记</div><h1>超越简单 RAG：从相似文本检索到可验证的证据系统</h1><p>2026 年 10 月 13 日 · Charlie Liu · 适合产品经理与研发团队</p><div class="intro">学习目标：理解检索与证据的区别，能设计一组对照实验，并识别检查推荐与标准映射中的失败模式。</div><p class="actions"><a href="https://charlie-blog.pages.dev/posts/beyond-naive-rag-medical-study/">博客文章</a><a href="https://hamel.dev/notes/llm/rag/beyond-naive-rag.pdf">原始 PDF</a><a href="index.html" download="beyond-naive-rag-study.html">下载 HTML</a></p></header><main><nav aria-label="学习目录"><strong>学习目录</strong><ol><li><a href="#section-1">一、先理解：RAG 的检索可以有多种实现</a></li><li><a href="#section-2">二、相关性与证据充分性，是不同的评价对象</a></li><li><a href="#section-3">三、同一份知识，可以建立多种检索表示</a></li><li><a href="#section-4">四、理解推理检索与 Late Interaction</a></li><li><a href="#section-5">五、长上下文为什么仍需要筛选</a></li><li><a href="#section-6">六、把检索失败分成可以处理的状态</a></li><li><a href="#section-7">七、知识图谱与图数据库分开决定</a></li><li><a href="#section-8">八、一处术语纠正：HyDE 不等于改写已有文档</a></li><li><a href="#section-9">九、用一组实验把知识变成能力</a></li><li><a href="#section-10">十、学习自测：先回答，再展开</a></li><li><a href="#section-11">推荐阅读路线与参考资料</a></li></ol></nav><div class="prose max-w-none"> <p>一个 RAG 系统找到了三段相关文字，模型也给出了流畅答案。这是否说明系统可靠？还不能。三段文字可能重复同一条依据，也可能遗漏决定结论的条件，甚至来自已经失效的规则。</p>
+<p>我读《Beyond Naive RAG: Practical Advanced Methods》时，最关注的是这个问题：<strong>怎样让检索结果真正支持一次判断，而不只是与问题看起来相似？</strong> 这也是检查推荐和影像检查项目标准映射需要解决的工程问题。</p>
+<p>本文是中文学习解读与产品设计推导，不是原书翻译。原书为演讲、幻灯片注释和问答合集；其技术文档检索实验不代表医学场景效果。文中的医学例子是架构测试样例，没有报告临床实测结果。</p>
+<p><a href="https://charlie-blog.pages.dev/ai-notes/beyond-naive-rag/">打开带目录的完整 HTML 学习版</a> · <a download="beyond-naive-rag-study.html" href="https://charlie-blog.pages.dev/ai-notes/beyond-naive-rag/index.html">下载离线 HTML</a></p>
+<h2 id="section-1">一、先理解：RAG 的检索可以有多种实现</h2>
+<p>RAG 是 Retrieval Augmented Generation，即检索增强生成。最常见的实现是把资料切块、计算向量、检索相似片段，再交给语言模型生成回答。但这只是一个实现方式。</p>
+<p>第 1 章将检索的范围扩展到关键词搜索、工具读取、多阶段搜索和推理辅助搜索。关键在于：模型如何取得当前任务需要的外部资料。不要因为系统使用工具或 Agent，就认为它不再需要检索设计。[原文第 1 章，书内 p.2–23]</p>
+<p>对影像标准库而言，标准编码适合精确查询，医院别名需要词法与同义词匹配，临床问题可能需要语义检索，部位和扫描方式适合结构化校验。它们可以共同服务于一次任务。</p>
+<p><strong>学习重点：检索方式由信息需求决定。</strong> 更换模型之前，先问当前失败是名称没匹配上、关键资料没找到，还是已经找到却判断错误。</p>
+<h2 id="section-2">二、相关性与证据充分性，是不同的评价对象</h2>
+<p>第 2 章讨论 FreshStack。传统指标关注相关资料的排序，RAG 还需要衡量资料是否覆盖回答所需的不同事实。[原文第 2 章，p.24–58；尤其 p.42–56]</p>
+<div aria-label="横向滚动表格" class="scroll" role="region" tabindex="0"><table><thead><tr><th>维度</th><th>通俗解释</th><th>FreshStack 使用的指标</th></tr></thead><tbody><tr><td>相关性</td><td>该找的资料找到了多少</td><td>Recall@50</td></tr><tr><td>覆盖率</td><td>回答需要的不同事实，有多少得到资料支持</td><td>Coverage@20</td></tr><tr><td>多样性</td><td>是否反复检索到支持同一事实的资料</td><td>alpha-nDCG@10</td></tr></tbody></table></div>
+<p>表中的 K 值是该基准的设置，不是生产系统必须采用的参数。MRR 和 nDCG 仍然有价值；增加证据覆盖评价，是为了补足原有指标。</p>
+<h3 id="一个简化的推荐测试样例">一个简化的推荐测试样例</h3>
+<p>假设一个测试病例的专家审核答案要求四项证据：推荐依据、适用条件、排除条件，以及本院项目映射。系统返回五段资料，但都只支持推荐依据。即使这些资料排名很高，在这个简化标注下，覆盖率也只有 1/4。</p>
+<p>这个例子没有指定具体诊疗方案。它说明的是：<strong>返回资料数量不等于证据数量。</strong> 一份资料可以支持多个事实，多份资料也可能只支持同一个事实。</p>
+<p>迁移到医学产品时，必需证据清单需要专家确定，并根据任务变化。不能只让模型把自己的答案拆成事实，再宣布自己证据充分；这样可能把最初遗漏的条件继续遗漏。</p>
+<p>建议分别记录推荐正确率、证据覆盖率和错误引用率。推荐碰巧正确、依据错误的样本，也应进入错误分析。</p>
+<h2 id="section-3">三、同一份知识，可以建立多种检索表示</h2>
+<p>第 5 章的中心思想是：同一份原始资料可以有不同的表示，每种表示服务于不同意图。[原文第 5 章，p.141–164]</p>
+<p>检查项目库可以设计成下表。它是本文的工程建议，并非书中现成的医学方案。</p>
+<div aria-label="横向滚动表格" class="scroll" role="region" tabindex="0"><table><thead><tr><th>表示</th><th>保存什么</th><th>用来做什么</th></tr></thead><tbody><tr><td>标准表示</td><td>标准编码、规范名称、结构化属性</td><td>精确查询和最终确认</td></tr><tr><td>别名表示</td><td>院内名称、缩写、历史命名</td><td>扩大名称召回</td></tr><tr><td>技术表示</td><td>部位、侧别、扫描方式、序列、组合关系</td><td>检索并核对技术内涵</td></tr><tr><td>临床表示</td><td>经审核的适用场景和规则摘要</td><td>检索推荐依据</td></tr></tbody></table></div>
+<p>所有表示都应回到同一个稳定 ID，并绑定来源、版本及生效状态。摘要和别名是检索入口；最终输出的标准编码与属性应取自权威记录。</p>
+<h3 id="用平扫--dwi--mra理解多种表示">用“平扫 + DWI + MRA”理解多种表示</h3>
+<p>名称检索可能找到文本相似的项目，但组合是否成立，需要项目库明确说明。如果没有相应组合项，应按库内组合规则进一步处理，不能因为名称接近，就自行拼出一个不存在的编码。</p>
+<p>同样，侧别缺失要被标记为缺失，或由已审核且明确适用的库内规则处理。模型不能凭相似度补出一个患者事实。</p>
+<p>这说明两个任务应该分开：<strong>标准映射确认“输入对应哪个项目”；临床推荐确认“当前情境下是否适用”。</strong> 前者成功，不代表后者成立。</p>
+<h2 id="section-4">四、理解推理检索与 Late Interaction</h2>
+<p>第 3 章介绍两种方向：Promptriever 让初始检索理解查询中的指令；Rank1 用推理增强候选资料的相关性判断。[原文第 3 章，p.59–106]</p>
+<p>普通相似检索可能把“同主题”当成“符合要求”。但查询中的否定、排除或组合条件，会改变相关性的定义。工程上既可以试验指令感知检索，也可以先用明确元数据过滤和条件校验。不能假定给普通 embedding 增加一句提示词，就会取得经过专门训练的模型能力。</p>
+<p>重排还有一个限制：它只能处理已经召回的候选。真正需要的资料完全没进候选集时，强大的 reranker 也无法把它排上来。</p>
+<p>第 4 章介绍 Late Interaction。单向量模型通常把一段文字压缩为一个向量；ColBERT 一类方法保留多个词元级向量，在打分时进行细粒度匹配。[原文第 4 章，p.107–140；机制见 p.110、122–124]</p>
+<p>可以把它理解为：单向量提供整体摘要，Late Interaction 保留更多局部线索。以 MaxSim 为例，每个查询词元寻找文档中最匹配的词元，再汇总匹配分数。</p>
+<p>不过，词元匹配分数不是临床解释，也不自动保证逻辑条件成立。多向量索引还带来存储、搜索和运维成本。值得在“名称相近但内涵不同”的中文样本上实测，而不能把英文基准中的提升直接套用到项目。</p>
+<h2 id="section-5">五、长上下文为什么仍需要筛选</h2>
+<p>第 6 章讨论 Context Rot。实验表明，输入更长、加入语义相似的干扰资料，会使一些任务的表现下降；具体变化依赖模型和任务。[原文第 6 章，p.165–185]</p>
+<p>需要区分“模型能接收多少 token”和“模型能可靠使用多少有效信息”。正确资料存在于上下文中，只说明它有机会被利用。</p>
+<p>在标准库里，很自然地存在相似干扰：左右侧不同、平扫与增强不同、成人与儿童适用范围不同、有效与失效版本不同。检索更多候选可以提高召回，但这些候选不必全部直接交给生成模型。</p>
+<p>建议在生成前形成一个紧凑的证据包：保留任务相关的关键条件、支持与排除依据、来源、版本、缺失及冲突。压缩时也不能只留下支持结论的段落，把反对证据删掉。</p>
+<p>原书还举了把任务拆分、保持各子任务上下文清晰的例子。但是否采用多 Agent，应取决于是否确有独立子任务及可验证的收益；简单筛选也可能足够。</p>
+<h2 id="section-6">六、把检索失败分成可以处理的状态</h2>
+<p>以下策略由本文推导，建议作为工作流状态，而不是只写在提示词中。</p>
+<div aria-label="横向滚动表格" class="scroll" role="region" tabindex="0"><table><thead><tr><th>状态</th><th>先核对什么</th><th>下一步</th></tr></thead><tbody><tr><td>没有检索结果</td><td>数据源、索引、权限和查询是否正常</td><td>定位故障；必要时改写再检索</td></tr><tr><td>结果不覆盖关键事实</td><td>缺的是患者信息还是知识依据</td><td>补充信息，或标记证据不足</td></tr><tr><td>主题相关但条件不适用</td><td>人群、部位、技术、排除条件</td><td>排除该候选并记录原因</td></tr><tr><td>多条资料互相冲突</td><td>来源、有效期、机构与优先规则</td><td>展示冲突；没有确定规则时交人工</td></tr><tr><td>映射项目不可执行</td><td>院内目录及设备能力</td><td>重新核对本地项目映射</td></tr></tbody></table></div>
+<p>查询改写只能改变表达，不能改变事实。尤其要保留否定词、侧别、时间和技术条件。每次改写需要可追溯，并设置次数及时间预算；改写之后仍无充分证据，就进入明确的终止状态。</p>
+<p>相似度分数也不是临床正确概率。它的阈值应根据审核样本校准，不能把一个通用分数直接称为“推荐置信度”。</p>
+<h2 id="section-7">七、知识图谱与图数据库分开决定</h2>
+<p>第 7 章强调，先用评测确认关系检索的收益，再决定是否需要专用图数据库。[原文第 7 章，p.186–195]</p>
+<p>“项目—部位—技术—适用规则—院内项目”的关系，可以先以普通数据库关系表表示。只有当复杂多跳遍历、规模或延迟要求使简单方案受限时，再比较专用图数据库。</p>
+<p>还要避免概念混淆：HNSW 使用图结构寻找向量邻居，但这些邻接关系不等于经过审核的医学关系。文本彼此相近，不能证明一种检查具有某项适用条件。</p>
+<p>小规模、低频任务也可以把完整资料作为长上下文基线。但是否更简单、更便宜、更准确，仍取决于总长度、干扰程度和查询成本，需要与检索方案比较。</p>
+<h2 id="section-8">八、一处术语纠正：HyDE 不等于改写已有文档</h2>
+<p>原书 p.148 将 HyDE 描述为把已有文档改写得更易搜索。这个描述更接近文档增强，与原始论文定义不同。</p>
+<p>原始 HyDE 的流程是：<strong>根据查询生成假想文档，再编码该文档，用向量检索真实资料。</strong> 假想文档可能含幻觉，因此不能拿它当事实依据。真正用于最终回答的依据，应来自检索出的真实资料。[HyDE 原始论文，ACL 2023]</p>
+<p>学习工程合集时，方法名、性能数字和部署要求，最好回到原始论文或项目文档确认。这份书提供了很好的方向，但不能替代具体场景的验证。</p>
+<h2 id="section-9">九、用一组实验把知识变成能力</h2>
+<p>建议先整理一批经审核、脱敏的真实输入与专门构造的困难样本。学习阶段可从约 100 个样本起步，用于发现错误；它不足以证明临床有效性。</p>
+<p>每个样本记录输入、允许的答案或行为、必需证据项、对应资料及版本。划分开发集和保留测试集，按任务类型分层。比较时固定资料快照、生成模型、提示词和输出要求，每次只改变一个主要因素。</p>
+<div aria-label="横向滚动表格" class="scroll" role="region" tabindex="0"><table><thead><tr><th>对照</th><th>改变什么</th><th>观察什么</th></tr></thead><tbody><tr><td>A：当前基线</td><td>不增加能力</td><td>确认现有错误分布</td></tr><tr><td>B：混合召回</td><td>增加关键词与向量组合</td><td>是否找回遗漏依据</td></tr><tr><td>C：多种表示</td><td>增加别名和技术表示</td><td>是否减少名称与内涵错配</td></tr><tr><td>D：证据筛选</td><td>去重并校验适用条件</td><td>覆盖率与错误规则采用率</td></tr><tr><td>E：高级检索</td><td>单独测试 Late Interaction 或推理重排</td><td>收益、延迟、存储成本</td></tr></tbody></table></div>
+<p>再做三组上下文压力测试：仅提供正确证据；加入相似但不适用的干扰；移除决定性证据。观察系统能否维持正确判断，以及在依据不足时是否停止。</p>
+<h3 id="指标如何定义">指标如何定义</h3>
+<ul>
+<li><strong>证据覆盖率</strong>：已被检索资料支持的必需证据项 / 全部必需证据项；建议同时报告关键证据是否全部齐备。</li>
+<li><strong>错误规则采用率</strong>：实际输出依据中包含不适用规则的样本数 / 被评测样本数。</li>
+<li><strong>标准映射准确率</strong>：最终映射符合审核答案的样本数 / 可判定映射样本数；一对多、组合拆分和可接受答案应提前约定。</li>
+<li><strong>证据不足时错误确定回答率</strong>：证据不足样本中，仍输出确定推荐的比例。</li>
+<li><strong>端到端 P95 延迟</strong>：从收到输入到返回完整结果的时延第 95 百分位；要包含补充检索及校验步骤。</li>
+</ul>
+<p>自动裁判可以辅助检查证据支持关系，但应与专家标注对齐，并抽查误判。不能用一个模型的评分替代全部审核。</p>
+<h2 id="section-10">十、学习自测：先回答，再展开</h2>
+<details><summary>1．Top-3 推荐命中了审核答案，为什么还要看证据？</summary><p>因为结果可能碰巧正确，依据却缺失、过期或不适用。需要分别评价最终输出和支持它的证据。</p></details>
+<details><summary>2．五段相关资料，为什么可能只覆盖一个事实？</summary><p>资料之间可能重复同一条依据。覆盖率按不同必需事实计算，不按资料段落数量计算。</p></details>
+<details><summary>3．为什么更强的 reranker 仍可能没有改善？</summary><p>如果关键资料没有被初始召回，重排就无法处理它。先区分召回缺失与排序错误。</p></details>
+<details><summary>4．缺少侧别或其他决定性条件，查询改写能否补出来？</summary><p>不能凭改写创造事实。应明确缺失，或按已审核且适用的规则处理；必要时补问。</p></details>
+<details><summary>5．HNSW 有图结构，是否表示已经拥有医学知识图谱？</summary><p>没有。HNSW 的边表达向量邻近关系，医学知识关系需要明确语义、来源和审核。</p></details>
+<details><summary>6．HyDE 生成的假想文档，能否直接作为推荐依据？</summary><p>不能。它用于引导检索，最终证据应来自真实资料，并经过适用性核对。</p></details>
+<h2 id="section-11">推荐阅读路线与参考资料</h2>
+<p>先读第 2 章建立评测观念，再读第 5 章设计多种表示，第 6 章理解干扰。之后根据失败样本决定是否深入第 3、4 章。第 7 章用于判断基础设施复杂度是否必要。书内页码比 PDF 阅读器页码约少 3 页。</p>
+<ol>
+<li><a href="https://hamel.dev/notes/llm/rag/beyond-naive-rag.pdf">Beyond Naive RAG：原始 PDF</a>。本文阅读的文件共 200 页，扉页标注 2026-08-30；网页章节可能采用不同发布日期。</li>
+<li><a href="https://hamel.dev/notes/llm/rag/p2-evals.html">第 2 章：Modern IR Evals For RAG</a>，证据覆盖、多样性与 FreshStack。</li>
+<li><a href="https://hamel.dev/notes/llm/rag/p5_map.html">第 5 章：RAG with Multiple Representations</a>，多种表示和路由。</li>
+<li><a href="https://hamel.dev/notes/llm/rag/p6-context_rot.html">第 6 章：Context Rot</a>，长上下文与干扰资料。</li>
+<li><a href="https://hamel.dev/notes/llm/rag/p7-graph-db.html">第 7 章：You Don’t Need a Graph DB (Probably)</a>，知识关系与基础设施选择。</li>
+<li><a href="https://aclanthology.org/2023.acl-long.99/">Gao 等：Precise Zero-Shot Dense Retrieval without Relevance Labels</a>，ACL 2023，HyDE 原始定义。</li>
+</ol>
+<p>我希望把这套方法用于一个具体的产品改进闭环：先留下可以审核的失败样本，再分析是资料、检索、条件校验还是生成出了问题，最后用同一组样本验证改动。模型和框架会继续变化，这个闭环可以持续积累。</p> </div></main><footer>本文为学习解读与工程推导。演讲中的基准成绩不等于医学场景效果；实例用于产品测试设计。</footer>
+<!-- ai-notes-site-navigation:v1 -->
+<style id="ai-notes-site-nav-style">
+#ai-notes-site-nav{box-sizing:border-box;position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;max-width:calc(100vw - 24px);width:max-content;padding:8px 10px;border:1px solid #cad8df;border-radius:12px;background:#fff;color:#17334a;box-shadow:0 5px 24px #18324722;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#ai-notes-site-nav a{display:inline-flex;color:#17334a;text-decoration:none;padding:7px 10px;border:0;border-radius:6px;margin:0;white-space:nowrap;font-size:13px;line-height:1.5}
+#ai-notes-site-nav a:first-child{background:#eaf4f3;color:#075e69;font-weight:700}
+#ai-notes-site-nav a:hover{background:#e8eef4}#ai-notes-site-nav a:focus-visible{outline:3px solid #a67120;outline-offset:2px}
+body{padding-bottom:88px!important}@media(max-width:540px){#ai-notes-site-nav{gap:1px;padding:6px}#ai-notes-site-nav a{font-size:12px;padding:7px 8px}.to-top{bottom:82px!important}}
+@media print{#ai-notes-site-nav{display:none!important}body{padding-bottom:0!important}}
+</style>
+<div id="ai-notes-site-nav" role="navigation" aria-label="博客返回导航"><a href="/ai-notes/">← HTML专题</a><a href="/posts/">博客文章</a><a href="/collection/">收藏原文</a><a href="/">首页</a></div>
+</body></html>

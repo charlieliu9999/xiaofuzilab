@@ -9,6 +9,11 @@ const ROOT = process.cwd();
 const PUBLIC = join(ROOT, 'public');
 const NOTES = join(PUBLIC, 'ai-notes');
 const known = {
+  '/ai-notes/beyond-naive-rag/': {
+    title: '超越简单 RAG：从相似文本检索到可验证的证据系统',
+    description: '中文学习文章：证据覆盖、多种表示、推理检索、上下文干扰，以及检查推荐与标准映射的实验和自测。',
+    category: '学习笔记', date: '2026-10-13', order: 4,
+  },
   '/ai-notes/ris-pacs-blueprint/': {
     title: 'AI Native RIS/PACS 系统总体方案',
     description: '独立系统方案：从定义、18个功能域与72项功能，到数据架构、技术实现、部署及30项验收用例。',
