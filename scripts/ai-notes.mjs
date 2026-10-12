@@ -19,6 +19,11 @@ const known = {
     description: '保留原文评审、修订意见与建设思路；与独立的RIS/PACS系统总体方案分开呈现。',
     category: '评审资料', date: '2026-10-11', order: 1,
   },
+  '/ai-notes/ris-pacs-market/': {
+    title: 'AI Native RIS/PACS · 市场调查与市场分析',
+    description: 'LLM赋能RIS/PACS+集成AI算法：两个市场分开算，升级窗口是否可行、多大空间、突破点在哪。',
+    category: '商业分析', date: '2026-10-12', order: 2,
+  },
 };
 
 function htmlFiles(dir) {
