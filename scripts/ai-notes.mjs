@@ -24,6 +24,11 @@ const known = {
     description: 'LLM赋能RIS/PACS+集成AI算法：两个市场分开算，升级窗口是否可行、多大空间、突破点在哪。',
     category: '商业分析', date: '2026-10-12', order: 2,
   },
+  '/ai-notes/ai-agent-production/': {
+    title: '从一条 Prompt 到生产级 Agent：Yarchi 长文精读',
+    description: '10 种生产级 agent 方案、harness 六大件、五种常见模式、6 条共通规则与选型建议。',
+    category: '学习笔记', date: '2026-10-13', order: 3,
+  },
 };
 
 function htmlFiles(dir) {
