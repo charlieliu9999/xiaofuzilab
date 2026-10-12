@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从一条 Prompt 到生产级 Agent：Yarchi 长文精读笔记</title>
+<meta name="description" content="Yarchi《How to build an AI agent: from one prompt to a production setup》精读：10 种生产级 agent 方案、harness 六大件、五种常见模式、6 条共通规则与选型建议。">
+<meta name="date" content="2026-10-13">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fa;color:#1c2f42;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.85}
+.wrap{max-width:880px;margin:0 auto;padding:22px 22px 90px}
+.crumb{font-size:13px;color:#6b7d90;margin-bottom:8px}
+.crumb a{color:#087d83;text-decoration:none}
+h1{font-size:29px;line-height:1.4;margin:6px 0 8px;letter-spacing:-.5px}
+.sub{color:#5a6a7c;margin:0 0 6px}
+.meta{font-size:13px;color:#8a99a8;margin:0 0 26px}
+.meta a{color:#087d83}
+h2{font-size:22px;margin:44px 0 14px;padding-top:6px;border-top:2px solid #dbe7ee;padding-top:18px}
+h3{font-size:17px;margin:26px 0 8px;color:#0f2a44}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:6px 0}
+.tldr{background:#fff;border:1px solid #d9e3ed;border-left:5px solid #087d83;border-radius:12px;padding:18px 22px;margin:20px 0}
+.tldr h2{border:0;margin:0 0 10px;padding:0;font-size:19px}
+.tldr ol{margin:8px 0;padding-left:22px}
+.tldr li{margin:8px 0}
+.toc{background:#fff;border:1px solid #d9e3ed;border-radius:12px;padding:16px 22px;margin:20px 0}
+.toc h2{border:0;margin:0 0 8px;padding:0;font-size:17px}
+.toc ol{columns:2;margin:6px 0;padding-left:22px;font-size:14px}
+.toc a{color:#0f2a44;text-decoration:none}
+.toc a:hover{color:#087d83}
+@media(max-width:640px){.toc ol{columns:1}}
+.card{background:#fff;border:1px solid #d9e3ed;border-radius:14px;padding:18px 22px;margin:14px 0}
+.card .k{font-weight:700;color:#087d83}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;margin:14px 0;font-size:14px}
+th,td{border:1px solid #dbe7ee;padding:10px 12px;text-align:left;vertical-align:top}
+th{background:#eaf3f4;color:#0f2a44}
+.rule{background:#fff;border:1px solid #d9e3ed;border-radius:12px;padding:14px 20px;margin:12px 0}
+.rule b{color:#0f2a44}
+.num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:#087d83;color:#fff;align-items:center;justify-content:center;font-weight:700;font-size:15px;margin-right:10px}
+.src{background:#eef4f7;border-radius:12px;padding:16px 22px;margin:30px 0;font-size:14px;color:#5a6a7c}
+.src a{color:#087d83;word-break:break-all}
+.note{font-size:14px;color:#6b7d90;background:#fffbe8;border:1px solid #f0dfa8;border-radius:10px;padding:12px 18px;margin:16px 0}
+code{background:#eef2f6;border-radius:6px;padding:2px 7px;font-size:14px;color:#0f2a44}
+footer{margin-top:40px;font-size:13px;color:#8a99a8}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumb"><a href="/ai-notes/">← HTML 专题</a></div>
+<h1>从一条 Prompt 到生产级 Agent<br>Yarchi 长文精读笔记</h1>
+<p class="sub">《How to build an AI agent: from one prompt to a production setup》—— 70+ 篇一线工程博客的归纳总结</p>
+<p class="meta">作者 Yarchi（@undefinedKi）· 原文发布 2026-10-10 · 笔记整理 2026-10-13 ·
+<a href="https://x.com/undefinedKi/status/2108911763257254302">原文推文链接</a></p>
+
+<div class="tldr">
+<h2>精华十条（先看这段）</h2>
+<ol>
+<li><b>拼的不是模型，是外围。</b>真正决定 agent 能否上生产的，是模型之外的那套 harness：循环、记忆、沙箱、工具网关、护栏、校验。</li>
+<li><b>Agent 三要素：</b>模型（做推理决策）、工具（可调用的函数与 API）、指令（行为规则）。Anthropic 的版本更简洁：agent 就是"在循环中基于环境反馈使用工具的 LLM"。</li>
+<li><b>默认只读。</b>凡是会改变现实的动作——写库、发版、付款、发通知——一律走人工审批或显式确认。</li>
+<li><b>干活的不许自己打分。</b>必须有独立的检查者（测试、lint、第二个 agent）来验收产出。</li>
+<li><b>先代码后模型。</b>凡是能用普通代码搞定的证据收集、数据搬运，就不要浪费模型去猜。</li>
+<li><b>一个还是多个，先用好单个。</b>只有当指令开始缠绕、工具互相重叠时才拆分。微软的教训：超过 4 跳的任务传递几乎必失败。</li>
+<li><b>十种成熟方案</b>覆盖研发全链路：后台写代码、代码评审、批量迁移、on-call 排障、安全、数据分析、客服、深度研究、知识沉淀、定时自动化。</li>
+<li><b>每个结论都要有证据：</b>日志行、查询语句、引用来源，缺一不可。</li>
+<li><b>最小必要工具：</b>每个任务只给它完成任务最少需要的工具，多一个都是风险。</li>
+<li><b>选型从"本周最烦你的那件事"开始。</b>口诀：Start narrow, read-only, with one checker on top —— 从窄切入、只读先行、头顶一个检查者。</li>
+</ol>
+</div>
+
+<div class="toc">
+<h2>目录</h2>
+<ol>
+<li><a href="#why">为什么是现在：三个数字</a></li>
+<li><a href="#what">Agent 到底是什么</a></li>
+<li><a href="#harness">Harness 六大件</a></li>
+<li><a href="#workflow">Workflow vs Agent</a></li>
+<li><a href="#patterns">五种常见模式</a></li>
+<li><a href="#one-or-many">一个 Agent 还是多个</a></li>
+<li><a href="#ten">十种生产级搭建方案</a></li>
+<li><a href="#rules">六条共通规则</a></li>
+<li><a href="#choose">选型建议：从哪下手</a></li>
+<li><a href="#close">一句话收束</a></li>
+</ol>
+</div>
+
+<h2 id="why">一、为什么是现在：三个数字</h2>
+<p>文章开篇没有讲理论，先甩了三个生产数字：</p>
+<ul>
+<li><b>Stripe：</b>每周合并 1000+ 个由 agent 写出的 PR；</li>
+<li><b>Uber：</b>70% 的 PR 来自 agent；</li>
+<li><b>Spotify：</b>累计合并 250 万个自动化维护 PR。</li>
+</ul>
+<p>关键洞察是：这些公司用的不是"一个万能 agent"，而是<b>一组针对不同任务专门设计的 agent</b>。每个 agent 职责窄、工具少、护栏清晰。这正是全文的立论起点：生产级 agent 的核心竞争力在分工与外围工程，而不在模型本身。</p>
+
+<h2 id="what">二、Agent 到底是什么</h2>
+<p>文章引用了两家最具代表性的定义：</p>
+<ul>
+<li><b>OpenAI 口径 —— 三要素：</b>Model（负责推理与决策的 LLM）、Tools（可调用的函数与 API）、Instructions（约束行为的规则）。三者缺一不可：没有工具是聊天机器人，没有指令是脱缰野马。</li>
+<li><b>Anthropic 口径 —— 一句话：</b>agent 就是"在循环中基于环境反馈使用工具的 LLM"。强调"循环"和"环境反馈"，点出了 agent 与单次问答的本质区别。</li>
+</ul>
+<p>但文章真正想说的是下一句：<b>各家公司真正投入数月打磨的，从来不是这三个要素，而是包在外面的 harness。</b>模型可以换，harness 才是资产。</p>
+
+<h2 id="harness">三、Harness 六大件</h2>
+<p>所谓 harness，就是让 agent 在生产环境里"不闯祸、能干活、可追溯"的那一整套外围工程。文章归纳出六个必备组件：</p>
+<table>
+<tr><th>组件</th><th>做什么</th><th>为什么重要</th></tr>
+<tr><td><b>循环</b>（Loop）</td><td>调用模型 → 执行工具 → 把结果喂回模型 → 重复，直到任务完成或触发停止条件</td><td>这是 agent 的"心跳"；没有稳健的循环控制，agent 会无限打转或中途泄气</td></tr>
+<tr><td><b>上下文与记忆</b></td><td>管理有限的上下文窗口：该记住什么、该压缩什么、该忘掉什么</td><td>长任务里上下文是稀缺资源，管理不好就会"失忆"或"老年痴呆"</td></tr>
+<tr><td><b>沙箱隔离</b></td><td>给 agent 一个隔离的执行环境（容器/虚拟机/独立分支）</td><td>再聪明的 agent 也会犯错，沙箱保证犯错的代价可控</td></tr>
+<tr><td><b>MCP 工具网关</b></td><td>通过统一网关接入工具，而不是让每个 agent 直连一堆 API</td><td>工具的权限、审计、限流在这里集中管，是安全的基本盘</td></tr>
+<tr><td><b>护栏</b>（Guardrails）</td><td>默认只读、花费上限、高风险操作强制人工审批</td><td>生产环境的"安全带"，也是和业务方建立信任的前提</td></tr>
+<tr><td><b>验证</b>（Verification）</td><td>测试、lint、再派第二个 agent 独立检查产出</td><td>对应后文规则一：干活的不许自己打分</td></tr>
+</table>
+<div class="note">学习注记：这六件套里，"护栏"和"验证"是最容易被个人项目忽略、却恰恰是生产与玩具的分水岭。个人做 demo 可以跳过，上生产一个都不能少。</div>
+
+<h2 id="workflow">四、Workflow vs Agent：别再二选一</h2>
+<p>文章花了一节澄清这对最容易混淆的概念：</p>
+<ul>
+<li><b>Workflow：</b>预先定义好的代码路径，"如果 A 则 B"，确定性高、可审计，但遇到没见过的分支就卡死；</li>
+<li><b>Agent：</b>自主决定执行步骤，灵活性高，但行为不确定、难以预测。</li>
+</ul>
+<p>生产实践的结论是<b>两者混合</b>：用 workflow 框住确定性的骨架，把真正需要判断的节点交给 agent。Stripe 内部把这种混合体叫做 <code>blueprints</code>。记住这个词，它代表了目前大厂的主流答案 —— 不是"全 agent 化"，而是"该确定的确定，该灵活的灵活"。</p>
+
+<h2 id="patterns">五、五种常见模式</h2>
+<p>把 70+ 案例拆开看，agent 的组织方式无非五种。认出模式，就能快速给新任务选型：</p>
+<table>
+<tr><th>模式</th><th>长什么样</th><th>适合哪类任务</th></tr>
+<tr><td><b>Prompt chaining</b><br>提示链</td><td>把任务拆成固定顺序的步骤，前一步的输出是后一步的输入</td><td>步骤清晰、顺序固定的流水线（如：生成 → 检查 → 改写）</td></tr>
+<tr><td><b>Routing</b><br>路由</td><td>先分类，再把任务分发给专门的子处理单元</td><td>输入类型多、但每类处理方式明确（如客服工单分诊）</td></tr>
+<tr><td><b>Parallelization</b><br>并行化</td><td>把任务切成互不依赖的子任务，同时跑，最后汇总</td><td>可拆分的批量工作（如多文件迁移、并行搜索）</td></tr>
+<tr><td><b>Orchestrator / Workers</b><br>调度器与工人</td><td>一个主 agent 负责规划拆解，多个 worker 并行执行，主 agent 汇总</td><td>复杂、动态的任务（深度研究、大型重构）</td></tr>
+<tr><td><b>Evaluator / Optimizer</b><br>评估与优化</td><td>一个生成、一个评估打分，循环迭代直到达标</td><td>质量要求高、可明确定义"好"的任务（如文案、代码）</td></tr>
+</table>
+
+<h2 id="one-or-many">六、一个 Agent 还是多个：微软的学费</h2>
+<p>这是全文最有警示价值的一节。文章的建议很干脆：<b>先把单个 agent 用好，只有当指令开始缠绕、工具互相重叠时，才考虑拆分。</b></p>
+<p>反面教材是微软 Azure SRE Agent 的第一版：100+ 工具、50+ 子 agent，看起来很强大，实际效果是 —— <b>凡是需要超过 4 跳传递的任务，几乎必失败。</b>信息在层层转述中衰减、失真，最后产出不可用。重构之后，只保留了数个通用 agent 和 5 个核心工具，反而 work 了。</p>
+<div class="note">学习注记：这条"4 跳必失败"是对"多 agent 协作"最实在的量化红线。以后凡是设计 agent 分工，先数跳数：规划 → 执行 → 汇总，3 跳是舒适区，4 跳是警戒线。</div>
+<p>拆分的判断标准可以记成一句话：<b>当你发现一份指令里塞了互相冲突的职责，或者一个 agent 的工具列表长到它自己都记不清时，就是拆的时候。</b></p>
+
+<h2 id="ten">七、十种生产级搭建方案（全文核心）</h2>
+<p>每一种方案，原文都按四个维度展开：<b>是什么、怎么建、谁在用、从哪起手</b>。下面是精读提炼。</p>
+
+<div class="card">
+<h3><span class="num">1</span>Background coding agent · 后台写代码</h3>
+<p><span class="k">是什么：</span>工程师在 Slack 或 ticket 里派活，然后就可以离开；回来时 PR 已经准备好了。Agent 在独立环境里写代码、跑测试、推分支，全程异步。</p>
+<p><span class="k">谁在用：</span>Stripe 的 Minions（每周 1000+ 个合并 PR，背后是内部 MCP 服务器 Toolshed 统一供给工具）；Spotify 的 Honk（配了一个 LLM judge，大约 1/4 跑偏的任务会被否决掉）；Shopify 的 River（每 8 个合并 PR 就有 1 个由 agent 联合撰写，30 天 3536 个）。</p>
+<p><span class="k">怎么建：</span>关键在"派活接口"（Slack/ticket 触发）+"隔离执行环境"（独立分支/容器）+"自动化的质量门"（测试必须过，judge 负责否决）。人只负责派活和最终合并。</p>
+<p><span class="k">从哪起手：</span>挑一类重复的小 ticket（修文案、加日志、补单测），先让 agent 在只读+独立分支里跑，人工合并。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">2</span>Code review agent · 代码评审</h3>
+<p><span class="k">是什么：</span>在人工 reviewer 之前，先把所有 PR 过一遍的评审 agent。不是替代人，而是把人的注意力留给真正难的问题。</p>
+<p><span class="k">谁在用：</span>Cloudflare（按风险分级，最多派 7 个评审视角，一个月 13 万次评审，中位成本 $0.98）；DoorDash（60.2% 的高危发现最终导致了代码变更 —— 说明不是在刷存在感）；Uber 的 uReview（75% 的评论被工程师评为"有用"）。</p>
+<p><span class="k">怎么建：</span>核心是"风险分级"：低风险 PR 轻量过、高风险 PR 多视角深挖。评审意见必须可执行、可定位到代码行，泛泛而谈的评论会被工程师无视。</p>
+<p><span class="k">从哪起手：</span>先给最成熟的仓库接上，只做"找 bug"不做"挑风格"，用"导致变更率"衡量效果。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">3</span>Migration agent · 批量迁移</h3>
+<p><span class="k">是什么：</span>在成千上万处代码里应用"同一种无聊改动"的 agent：升级依赖、迁移测试框架、清理过期 flag。人类最烦、agent 最擅长的活。</p>
+<p><span class="k">谁在用：</span>Airbnb（3500 个测试文件迁移，人工估计要 1.5 年，实际 6 周干完）；Google（JUnit3 迁 JUnit4，5359 个文件，3 个月）；DoorDash（清除过期 feature flag，50 个里 45 个可直接合并）。</p>
+<p><span class="k">怎么建：</span>这是 parallelization 模式的教科书案例：任务天然可拆、单点改动小、验证标准明确（测试全过即成功）。配上批量 PR + 人工抽查合并的流程。</p>
+<p><span class="k">从哪起手：</span>找你们代码库里"同一改动超过 500 处"的那件事，就是它。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">4</span>On-call / SRE agent · 值班排障</h3>
+<p><span class="k">是什么：</span>告警一响就接入排查的 agent：拉日志、查指标、定位根因。默认只读，真正要执行修复动作时，必须人工按键确认。</p>
+<p><span class="k">谁在用：</span>微软 Azure SRE Agent（9 个月独立处理 35000+ 事件，某服务的平均 MTTR 从 40.5 小时降到 3 分钟）；Ramp 的 OCA；Meta 也有同类实践。</p>
+<p><span class="k">怎么建：</span>护栏是生命线：排查阶段只读、可观测性工具（日志/指标/trace）通过 MCP 网关统一供给；修复动作分级，重启服务这种一律人工确认。MTTR 是唯一的北极星指标。</p>
+<p><span class="k">从哪起手：</span>先接"只读诊断"：告警触发后自动出一份根因分析报告，人来做决策。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">5</span>Security agent · 安全</h3>
+<p><span class="k">是什么：</span>三件事：告警分诊、挖漏洞、起草修复方案。安全场景对"证据"的要求最高，模型不许空口断言。</p>
+<p><span class="k">谁在用：</span>Cloudflare（证据包先行于模型结论，每一条引用都由代码校验过）；Figma（漏洞解决时间快了 71%）；Shopify 的 Dispatch（6 周 300+ 有效发现，折合约 40 万美元等值赏金）。</p>
+<p><span class="k">怎么建：</span>核心设计是"证据先行"：先由普通代码收集证据包（调用栈、diff、依赖版本），模型只负责基于证据推理。引用必须可机器校验，这是安全 agent 与普通 agent 的最大区别。</p>
+<p><span class="k">从哪起手：</span>从告警分诊开始：把安全告警按"真/假阳性"先分一遍，省下安全工程师的时间。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">6</span>Data analyst agent · 数据分析</h3>
+<p><span class="k">是什么：</span>用自然语言问数，agent 自己写 SQL、查数、把结果和 SQL 一起交回来。SQL 必须附上 —— 这是可审计性的底线。</p>
+<p><span class="k">谁在用：</span>DoorDash 的 Vera（覆盖 20 万+ 数据集，评估通过率从 43% 干到 90%）；Notion 的 Data Scout；OpenAI 内部 agent（3500+ 用户，背后 600 PB 数据）。</p>
+<p><span class="k">怎么建：</span>最难的是"语义层"：表和字段的业务含义必须沉淀成知识，否则模型写出的 SQL 似是而非。通过率要用真实历史问题做回归评估，一点点磨上去（Vera 的 43%→90% 就是这么来的）。</p>
+<p><span class="k">从哪起手：</span>先给最常用的 20 张表写好语义注释，再放 agent 上来。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">7</span>Customer support agent · 客服</h3>
+<p><span class="k">是什么：</span>不是"一个大模型回答一切"，而是一条成本阶梯：简单查询走确定性代码，常见问题走 RAG，只有复杂问题才上完整的 agent；再往下还有专家子 agent、护栏、LLM 评审，低置信度一律转人工。</p>
+<p><span class="k">谁在用：</span>Lyft、DoorDash、Coinbase 的 CEEcil。</p>
+<p><span class="k">怎么建：</span>这是 routing 模式的代表作。设计重点是"分流"而不是"回答"：80% 的问题不该进到 agent 那一层。每一层的转人工阈值要可调、可观测。</p>
+<p><span class="k">从哪起手：</span>先统计你们重复问题 Top 20，用 RAG 挡掉，再谈 agent。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">8</span>Research agent · 深度研究</h3>
+<p><span class="k">是什么：</span>主 agent 负责规划拆解，多个工作 agent 并行搜索，最后压缩汇总、逐条核验引用。Orchestrator/Workers 模式的典型。</p>
+<p><span class="k">谁在用：</span>Anthropic（Opus 做领队规划，Sonnet 做子 agent 执行；代价是 token 消耗约普通聊天的 15 倍）；Harvey（法律场景）；Perplexity Deep Research。</p>
+<p><span class="k">怎么建：</span>"引用核验"是独立的一步，不能省。成本意识要前置：15 倍 token 意味着必须用"小模型干活、大模型把关"的搭配，否则账单爆炸。</p>
+<p><span class="k">从哪起手：</span>先定义"研究报告的验收标准"（覆盖面、引用格式、结论可溯源），再搭 pipeline。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">9</span>Knowledge agent · 第二大脑</h3>
+<p><span class="k">是什么：</span>把专家"没写下来、但天天在用"的经验，沉淀成 agent 可读的知识文件。agents 负责编写，critic 负责评审，事实有过期机制，出错后能自我修复。</p>
+<p><span class="k">谁在用：</span>Meta 的 tribal knowledge 项目（4100+ 份散落文件整理成 59 个上下文文件）；Notion 的 Lore。</p>
+<p><span class="k">怎么建：</span>关键在"写入-评审-过期"的闭环：知识不是一次写完的，要有 critic 持续评审质量，有过期机制淘汰失效经验，有"出错 → 回溯 → 修正知识"的自我修复链路。</p>
+<p><span class="k">从哪起手：</span>找团队里"只有某个人知道"的那 10 件事，先沉淀下来。</p>
+</div>
+
+<div class="card">
+<h3><span class="num">10</span>Scheduled automation agent · 定时自动化</h3>
+<p><span class="k">是什么：</span>cron 定时唤醒的 agent：每天早上查五个工具、出一份简报。只读访问，用 bookmark 记进度，内存分成"用户偏好"和"自身状态"，每轮有预算上限。</p>
+<p><span class="k">谁在用：</span>Anthropic 的每日简报（每轮预算上限 $5）；GitHub Agentic Workflows；微软的定时任务实践。</p>
+<p><span class="k">怎么建：</span>三个设计点：bookmark（下次从哪继续）、记忆分区（偏好 vs 状态分开存）、预算上限（防止半夜烧钱）。只读先行是铁律。</p>
+<p><span class="k">从哪起手：</span>每天早上你手动查的那几件事，第一个自动化它。</p>
+</div>
+
+<div class="note">学习注记：十种方案里，前五种（写代码/审代码/迁移/值班/安全）是研发提效，后五种（数据/客服/研究/知识/定时）是业务赋能。原文文末还附了一份可直接安装的开源 agent 配置仓库清单，动手时可以直接拿来改。</div>
+
+<h2 id="rules">八、六条共通规则（背下来）</h2>
+<p>把十种方案横向对比，文章提炼出六条所有生产级 agent 都遵守的规则。这是全文最值得背下来的部分：</p>
+
+<div class="rule"><b>规则一：干活的 agent 不自己打分，必须有独立检查者。</b><br>测试、lint、第二个 agent —— 验收权永远在干活者之外。这是所有"AI 生成内容可信"的根基。</div>
+<div class="rule"><b>规则二：先代码后模型，证据收集用普通代码。</b><br>凡是确定性的数据搬运、日志拉取、格式校验，都用代码做。模型只处理真正需要判断的部分，又省钱又可靠。</div>
+<div class="rule"><b>规则三：默认只读，改变现实的动作走人工。</b><br>写库、发版、付款、对外通知 —— 默认都不许，显式审批才放行。这是生产环境的信任基石。</div>
+<div class="rule"><b>规则四：每个结论都要有证据。</b><br>日志行、查询语句、引用来源，三者至少其一。没有证据的结论，在生产系统里等于没说。</div>
+<div class="rule"><b>规则五：每个任务只给最小必要工具。</b><br>工具是能力，也是攻击面和犯错面。按任务最小集授权，多一个都不给。</div>
+<div class="rule"><b>规则六：用真实历史案例做回归评估。</b><br>不要用合成数据自嗨。把历史上真实发生过的 case 沉淀成回归集，每次改动都跑一遍，通过率是唯一的硬指标（如 Vera 的 43%→90%）。</div>
+
+<h2 id="choose">九、选型建议：从哪下手</h2>
+<p>文章结尾的选型建议非常克制，没有"都要做"，而是：<b>只看"本周最让你烦的那件事"，选一个切入。</b></p>
+<ul>
+<li>小 ticket 堆积如山 → <b>后台 coding agent</b>（第 1 种）</li>
+<li>PR 排队等评审 → <b>代码评审 agent</b>（第 2 种）</li>
+<li>同一个改动要做 500 处 → <b>迁移 agent</b>（第 3 种）</li>
+<li>半夜被报警叫醒 → <b>on-call agent</b>（第 4 种）</li>
+<li>每天重复回答同样的数据/客服问题 → <b>数据分析 / 客服 agent</b>（第 6、7 种）</li>
+<li>每天早上手动查五个工具 → <b>定时自动化 agent</b>（第 10 种）</li>
+</ul>
+<p>落地的口诀只有一句：<b>Start narrow, read-only, with one checker on top</b> —— 从窄切入、只读先行、头顶一个检查者。先让它在小范围里只读地跑、有独立检查者验收，跑顺了再放开权限、扩大范围。</p>
+
+<h2 id="close">十、一句话收束</h2>
+<p>原文最后一句，也是全文的题眼：<b>The model is the easy part. The setup around it is what makes it work.</b></p>
+<p>模型是最容易的部分，真正让它 work 的，是围绕它的那一整套东西 —— 循环、记忆、沙箱、网关、护栏、验证、分工、评估。这篇文章的价值，就是把"那一整套东西"拆成了十种可抄的作业和六条可背的规则。</p>
+
+<div class="src">
+<b>来源</b><br>
+原文：Yarchi《How to build an AI agent: from one prompt to a production setup》<br>
+推文：<a href="https://x.com/undefinedKi/status/2108911763257254302">https://x.com/undefinedKi/status/2108911763257254302</a>（2026-10-10）<br>
+本页为学习笔记：内容系对原文的归纳转述与学习注记，非原文转载；数据口径均来自原文引用的各公司工程博客。
+</div>
+
+<footer>Charlie Liu · AI 笔记 · 整理于 2026-10-13</footer>
+</div>
+</body>
+</html>
