@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Native RIS/PACS · 市场调查与市场分析 v2</title>
+<meta name="description" content="纠偏重做：LLM赋能RIS/PACS系统+集成AI影像算法。两个市场分开算：信息化升级市场 vs AI算法市场。数据截止2026-10-12。">
+<style>
+:root{--ink:#1a2b3c;--muted:#5b6b7c;--line:#e2e8f0;--accent:#0e7490;--accent2:#b45309;--bg:#f8fafc;--card:#ffffff}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg);line-height:1.75}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px 80px}
+header.hero{background:linear-gradient(135deg,#0c4a6e,#0e7490);color:#fff;padding:56px 20px 44px;margin-bottom:32px}
+header.hero .wrap{padding-bottom:0}
+.eyebrow{font-size:13px;letter-spacing:.18em;opacity:.85;margin:0 0 10px}
+h1{font-size:30px;margin:0 0 12px;line-height:1.4}
+.hero p{margin:6px 0;opacity:.92;font-size:15px}
+nav.toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:-8px 0 28px}
+nav.toc b{display:block;margin-bottom:8px;font-size:14px}
+nav.toc ol{margin:0;padding-left:20px;font-size:14px;columns:2}
+nav.toc li{margin:4px 0}
+nav.toc a{color:var(--accent);text-decoration:none}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:26px 28px;margin:0 0 22px}
+h2{font-size:21px;margin:0 0 14px;padding-bottom:10px;border-bottom:2px solid var(--accent)}
+h3{font-size:17px;margin:22px 0 10px;color:#0c4a6e}
+p{margin:10px 0}
+ul,ol{margin:8px 0;padding-left:22px}
+li{margin:6px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#f1f5f9;font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.kv .box{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:#fbfdff}
+.kv .box b{font-size:15px}
+.num{font-size:26px;font-weight:700;color:var(--accent)}
+.num small{font-size:13px;font-weight:400;color:var(--muted)}
+.callout{border-left:4px solid var(--accent2);background:#fffbeb;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+.callout.blue{border-color:var(--accent);background:#ecfeff}
+.callout.red{border-color:#dc2626;background:#fef2f2}
+.verdict{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 18px;margin:14px 0}
+.src{font-size:12.5px;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;background:#e0f2fe;color:#075985;margin-right:6px}
+.tag.warn{background:#fef3c7;color:#92400e}
+.tag.ok{background:#dcfce7;color:#166534}
+.chart{margin:16px 0}
+.chart .bar-row{display:flex;align-items:center;margin:8px 0;font-size:14px}
+.chart .bar-label{width:200px;flex-shrink:0}
+.chart .bar-track{flex:1;background:#eef2f7;border-radius:6px;height:22px}
+.chart .bar-fill{height:22px;border-radius:6px;background:linear-gradient(90deg,#0e7490,#22d3ee)}
+.chart .bar-fill.b2{background:linear-gradient(90deg,#b45309,#fbbf24)}
+.chart .bar-fill.b3{background:linear-gradient(90deg,#4d7c0f,#a3e635)}
+.chart .bar-val{width:130px;flex-shrink:0;text-align:right;font-weight:600}
+footer{margin-top:30px;font-size:13px;color:var(--muted)}
+@media(max-width:640px){.kv{grid-template-columns:1fr}nav.toc ol{columns:1}.chart .bar-label{width:120px}.chart .bar-val{width:100px}}
+@media print{header.hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}section.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+<p class="eyebrow">MARKET RESEARCH v2 · AI NATIVE RIS/PACS</p>
+<h1>AI Native RIS/PACS<br>市场调查与市场分析 <span style="font-size:18px">v2</span></h1>
+<p>纠偏重做：LLM 赋能的 RIS/PACS 系统 + 集成 AI 影像算法。两个市场分开算。</p>
+<p class="src" style="color:#e0f2fe">数据截止 2026-10-12 · v1 的四个错误已纠正，见第一节</p>
+</div></header>
+
+<div class="wrap">
+<nav class="toc"><b>目录</b><ol>
+<li><a href="#s0">执行摘要</a></li>
+<li><a href="#s1">一、先纠错：v1 的四个错误</a></li>
+<li><a href="#s2">二、两个市场，一张图</a></li>
+<li><a href="#s3">三、我们的产品到底是什么</a></li>
+<li><a href="#s4">四、升级窗口是否可行</a></li>
+<li><a href="#s5">五、市场空间有多大</a></li>
+<li><a href="#s6">六、突破点在哪里</a></li>
+<li><a href="#s7">七、风险清单</a></li>
+<li><a href="#s8">八、数据缺口与假设</a></li>
+</ol></nav>
+
+<section class="card" id="s0"><h2>执行摘要</h2>
+<div class="verdict"><b>窗口真实存在：传统 PACS 的 AI-Native 升级换代，市场上没有同类产品，传统信息化厂商和 AI 算法公司都还没进来。但这是一个"升级市场"不是"新建市场"——空间来自 1.4 万套存量 PACS 的换代，约 19 亿/年；突破点在县域医共体和二级医院，打法是"卖升级不卖新建、卖效率不卖 AI"。</b></div>
+<ul>
+<li><b>两个市场</b>：信息化市场（RIS/PACS 系统，存量升级逻辑）vs AI 算法市场（单病种算法，按次收费逻辑）——我们是前者的升级者、后者的集成方，不跟算法公司抢赛道。</li>
+<li><b>无直接竞品</b>：全网未检索到"LLM+PACS/RIS 系统升级"公开案例；东软、创业慧康、东华的 AI 停留在"大模型赋能原有模块"，没有一家发布 LLM-Native RIS/PACS。</li>
+<li><b>技术已到实用线</b>：讯飞星火医疗 V3.5 病历采纳率 91%、X 线/MR 报告生成采纳率 75%（"首次达到实用水平"）；LLM 擅长的流程自动化、报告生成、质控，正好打在 RIS/PACS 的痛点上。</li>
+<li><b>政策出现松动</b>：2026-04-01 起 12 项 AI 辅助诊断纳入国家医保乙类目录、837 家医院落地（单源，需跟踪）；县域影像中心建设指南（2026-05）+ 强基工程 312.94 亿。</li>
+<li><b>最大风险</b>：医院付费能力承压，"AI 订阅"接受度极低；安徽某三甲 4 家算法厂商免费试用零转化——证明必须卖"效率提升"而不是卖"AI"。</li>
+</ul>
+</section>
+
+<section class="card" id="s1"><h2>一、先纠错：v1 的四个错误</h2>
+<p>用户指出的四点全部成立，v2 按纠正后口径重做：</p>
+<table>
+<tr><th>#</th><th>v1 错误</th><th>v2 纠正</th></tr>
+<tr><td>1</td><td>把传统信息化厂家的系统和 AI 算法服务混在一个市场写</td><td>两个赛道彻底分开：<b>信息化市场</b>（第 2、5 节）vs <b>AI 算法市场</b>（第 6 节单独）</td></tr>
+<tr><td>2</td><td>把联影医疗/GE/飞利浦/西门子列为 PACS 系统厂商</td><td>它们是<b>影像设备</b>厂商。PACS 软件看东软、东华医为、创业慧康、卫宁健康等信息化厂商；设备厂商出局</td></tr>
+<tr><td>3</td><td>市场空间和市场定位混淆</td><td>分开：空间 = 传统 PACS 存量升级换代的市场；定位 = LLM 赋能 RIS/PACS + 集成 AI 算法的新物种</td></tr>
+<tr><td>4</td><td>没讲清产品到底是什么</td><td>产品定义：<b>基于 LLM 赋能的 RIS/PACS 系统（传统信息化的 AI-Native 升级）+ 集成第三方 AI 影像算法</b>，目标是提升科室工作效率和能力</td></tr>
+</table>
+</section>
+
+<section class="card" id="s2"><h2>二、两个市场，一张图</h2>
+<div class="kv">
+<div class="box"><b>市场 A：医院信息化市场</b><br>
+<span class="tag">我们的主战场</span><br>
+<span class="src">卖什么：RIS/PACS 系统（流程信息化）<br>玩家：东软、卫宁健康、创业慧康、东华软件等综合医疗信息化厂商<br>结构性事实：<b>中国没有独立的 PACS 软件赛道</b>，PACS 是信息化大包中的一个模块（艾瑞咨询）<br>商业模式：项目制整单（软件+实施+服务），5–7 年替换周期<br>纯软件口径 2025 年约 6.2 亿；整单远大于此</span></div>
+<div class="box"><b>市场 B：影像 AI 算法市场</b><br>
+<span class="tag">我们是集成方，不是竞争方</span><br>
+<span class="src">卖什么：单病种/单器官 AI 辅助诊断算法<br>玩家：数坤、推想、深睿、鹰瞳、商汤医疗等<br>商业模式：按次收费 / 按年订阅 / 免费试用转收费<br>现状：普遍亏损（鹰瞳 2026H1 亏损扩大 28 倍）；数坤按次收费 5.6 亿是少数跑通者（媒体口径）<br>我们的角色：<b>集成第三方算法</b>，不自研算法、不跟算法公司抢赛道</span></div>
+</div>
+<div class="callout blue"><b>一句话</b>：我们在市场 A 里做"AI-Native 升级"，从市场 B 里"采购算法能力"。两个市场用两套打法、两套财务模型，不要混在一起算账。</div>
+</section>
+
+<section class="card" id="s3"><h2>三、我们的产品到底是什么</h2>
+<p><b>LLM 赋能的 RIS/PACS 系统 + 集成第三方 AI 影像算法</b>，目标是提升放射科工作效率和能力。三个定位要点：</p>
+<ul>
+<li><b>不是"传统 PACS + 外挂 AI"</b>：LLM 原生重构工作流——智能登记分诊、报告自动生成、语义质控、危急值/随访闭环、运营统计。LLM 擅长的是流程和语言，正好打在 RIS 的强项区。</li>
+<li><b>不是"AI 算法公司"</b>：影像算法（肺结节、冠脉、脑卒中等）从市场 B 采购集成，我们不自研、不拿算法三类证，把合规成本留给算法厂商。</li>
+<li><b>没有同类产品</b>：全网未检索到"LLM+PACS/RIS 系统升级"公开案例。最接近的是讯飞"影像诊断长程智能体"（诊断智能体，非系统升级）和东软 NeuSpace（影像后处理平台，非 RIS/PACS）。<span class="tag">数据事实</span></li>
+</ul>
+<h3>为什么传统厂商和 AI 公司都还没做？</h3>
+<table>
+<tr><th>阵营</th><th>为什么没做</th></tr>
+<tr><td>传统信息化厂商（东软/创业慧康/东华）</td><td>AI 停留在"大模型赋能原有模块"（病历、质控、CDSS）；LLM-Native 重构等于革自己的命，没有动力也没有基因。添翼 2.0、云枢智能体都是"加法"，不是"重构"。</td></tr>
+<tr><td>AI 算法公司（数坤/推想/深睿）</td><td>基因是算法，进不了医院信息化核心流程；安徽某三甲 4 家厂商免费试用零转化，证明单点算法难收费——它们缺的是"系统"，不是"算法"。</td></tr>
+<tr><td>设备厂商（联影/GE/飞利浦/西门子）</td><td>主业是卖设备；联影智能的 AI PACS 是"AI 原生新一代影像平台"（新玩家），不是传统 PACS 的 LLM 升级。</td></tr>
+</table>
+<div class="callout"><b>窗口逻辑</b>：传统厂商不愿革自己的命，算法公司进不了系统层——中间"LLM 重构 RIS/PACS 工作流"这一层是空的。这就是用户说的"整个市场升级的一个窗口"。</div>
+</section>
+
+<section class="card" id="s4"><h2>四、升级窗口是否可行：四维验证</h2>
+<h3>1. 技术可行 <span class="tag ok">已到实用线</span></h3>
+<ul>
+<li>讯飞星火医疗 V3.5（2026-06）：病历医生采纳率 <b>91%</b>、书写时间缩短 52%；X 线/MR 影像报告生成采纳率 <b>75%</b>，"首次达到实用水平"。<span class="tag">已核实</span></li>
+<li>天坛医院"龙影"RadGPT：MRI 分析 0.8 秒生成上百种疾病诊断意见。<span class="tag">已核实</span></li>
+<li>东软添翼 2.0：武汉大学中南医院日均自动完成 3500–4000 份病历内涵质控，采纳率 70–80%。<span class="tag">已核实</span></li>
+<li>匹配度：LLM 强在<b>流程自动化、报告生成、语义质控</b>——正是 RIS/PACS 四大痛点（架构老、AI 割裂、数据孤岛、流程低效）中的后三个。PACS 的"调阅归档"不需要 LLM，RIS 的"流程"需要。</li>
+</ul>
+<h3>2. 供给侧 <span class="tag ok">无直接竞品</span></h3>
+<ul>
+<li>传统 PACS 厂商：<b>零家</b>发布 LLM-Native RIS/PACS 升级产品或战略（全网检索结果）。</li>
+<li>最接近的在研：讯飞"影像诊断长程智能体"（诊断智能体，非系统升级）；东软 NeuSpace（影像后处理平台，2026-09 获 NMPA 证，非 RIS/PACS）。</li>
+</ul>
+<h3>3. 需求侧 <span class="tag warn">痛点真实、付费承压</span></h3>
+<ul>
+<li>硬需求：影像数据年增速 30% vs 医生年增速 4%；每 7 万人 1 名放射科医生；日均阅片 300–400 张 X 光——<b>人不够是结构性矛盾</b>。<span class="tag">已核实</span></li>
+<li>存量痛点：传统 PACS 四大痛点（架构老、高并发不足、AI 工具割裂、数据孤岛、报告依赖人工）是行业共识。<span class="tag">已核实</span></li>
+<li>付费承压：第一财经 2026 年访谈——"医院现在唯一接受订阅的，可能只有短信、网费这种基础服务，AI 还远没到这个阶段"；B 端出路是帮医院<b>节省成本/留住患者</b>而非增加支出。<span class="tag">已核实</span></li>
+<li>反面教材：安徽某三甲 4 家 AI 厂商免费试用，<b>无一实现收费转化</b>——单点 AI 卖不动，必须卖"效率提升"的整体方案。<span class="tag">已核实</span></li>
+</ul>
+<h3>4. 政策侧 <span class="tag ok">出现松动</span></h3>
+<ul>
+<li><b>医保支付破冰</b>（2026-04-01）：12 项 AI 辅助诊断纳入国家医保乙类目录，参保人自付 15–30%，全国 837 家医院落地——医院采购 AI 从"科研经费"变为"可报销项目"。<span class="tag warn">单源，需跟踪官方文件</span></li>
+<li>但红线未变：医保局明确 AI 是"扩展项"不是独立收费项，"AI 带来的效率提升是医院自己的事，不能转嫁给患者"——<b>所以必须卖"效率"而不是卖"AI"</b>。<span class="tag">已核实</span></li>
+<li>县域指南（2026-05）+ 强基工程 312.94 亿 + 山东 2027 年 60% 县覆盖 KPI——县域是政策、钱、标准三对齐的市场。<span class="tag">已核实</span></li>
+<li>治理框架：《医疗机构人工智能应用与治理专家共识（2026 版）》明确人机协同权责与熔断机制——合规路径清晰。<span class="tag">已核实</span></li>
+</ul>
+<div class="verdict"><b>可行性结论</b>：技术到线、供给空白、需求真实、政策松动——四个维度都支持"升级窗口"存在。但需求侧的付费承压是最大变量：<b>可行性的钥匙不在"AI 多强"，而在"能不能算出医院省多少钱/多接多少检查"</b>。第一家标杆的真实 ROI 数据是整个计划的生死线。</div>
+</section>
+
+<section class="card" id="s5"><h2>五、市场空间有多大</h2>
+<p><b>只算市场 A（信息化升级），市场 B 我们是集成方不算收入。</b></p>
+<h3>存量基数</h3>
+<ul>
+<li>二级以上医院约 <b>1.58 万家</b>（三级 3,855 + 二级 11,946，2023 年口径）——PACS 存量装机上限。<span class="tag">已核实</span></li>
+<li>按行业常识二级以上基本普及，存量约 <b>1.4 万套</b>（推算，非官方）。</li>
+<li>替换周期 5–7 年 → 年均约 15–20% 进入升级窗口 → <b>每年约 2,100–2,800 家医院</b>面临 PACS 换代决策。</li>
+</ul>
+<h3>年升级市场测算</h3>
+<div class="chart">
+<div class="bar-row"><div class="bar-label">年进入升级窗口医院数</div><div class="bar-track"><div class="bar-fill" style="width:55%"></div></div><div class="bar-val">约 2,400 家</div></div>
+<div class="bar-row"><div class="bar-label">整单均价（加权）</div><div class="bar-track"><div class="bar-fill b2" style="width:30%"></div></div><div class="bar-val">约 80 万</div></div>
+<div class="bar-row"><div class="bar-label">年升级市场（TAM_A）</div><div class="bar-track"><div class="bar-fill b3" style="width:100%"></div></div><div class="bar-val">约 19 亿/年</div></div>
+</div>
+<p>测算：2,400 家 × 80 万（整单均价，三甲 175 万/县级 60–95 万加权）≈ <b>19 亿/年</b>。其中"AI-Native 升级"是我们定义的<b>新品类</b>，初期渗透率假设 5% → <b>约 1 亿/年的新品类空间</b>，随标杆复制放大。</p>
+<h3>SOM（3 年目标）</h3>
+<ul>
+<li>第一年：10–15 个县域医共体标杆 → 收入 0.3–0.5 亿</li>
+<li>第二年：省内复制 + 二级医院升级 → 收入 0.8–1.2 亿</li>
+<li>第三年：新品类市占率 15–20% → 收入 <b>1.5–2 亿</b></li>
+</ul>
+<div class="callout"><b>算法集成收入</b>（市场 B）：按"平台集成费 / 按次分成"另计，不混入系统收入。数坤按次收费 5.6 亿证明模式有人买单，但那是算法厂商的收入，不是我们的——我们的算法收入来自集成溢价，量级小一个数量级，<b>不要把它当主营收来讲故事</b>。</div>
+</section>
+
+<section class="card" id="s6"><h2>六、突破点在哪里</h2>
+<h3>突破点一：县域医共体影像中心——"新建即 AI-Native"</h3>
+<ul>
+<li>3,099 个医共体，80% 的县"初步建成"影像中心——但 2026-05 建设指南刚出，<b>"初步"≠"达标"</b>，规范化升级是刚需。</li>
+<li>买方是财政+卫健委（强基工程 312.94 亿），不占用医院日常预算——绕开"医院付费能力承压"的坑。</li>
+<li>山东滨州：11 家医共体影像中心已出报告 10 万+ 份——从建设转入运营，<b>早进场比晚进场好</b>。</li>
+<li>打法：跟着指南做"新建即 AI-Native"，不跟老 PACS 拼替换。</li>
+</ul>
+<h3>突破点二：二级医院 PACS 换代——"升级不重建"</h3>
+<ul>
+<li>11,946 家二级医院是存量最大的一块；预算 60–95 万适中；信创有加分。</li>
+<li>浙江海盐（94.6 万一体化升级，响应信创+电子病历 5 级）是标准模板。</li>
+<li>打法：<b>"升级"</b>而不是"推倒重建"——利旧历史数据、平滑迁移，降低决策门槛；用"LLM 报告生成采纳率 75%"这类硬数字说话。</li>
+</ul>
+<h3>突破点三：话术——"卖效率，不卖 AI"</h3>
+<ul>
+<li>医院不接受"AI 订阅"，但接受"节省成本/留住患者"。话术必须翻译成：<b>报告周转时间缩短 X%、医生人均阅片量提升 X%、危急值漏报率降到 X</b>——全部可核验。</li>
+<li>医保"扩展项"红线决定了：永远不要提"AI 诊断费"，只提"效率提升带来的检查量增长和人力释放"。</li>
+</ul>
+<div class="callout blue"><b>三不做</b>：不碰头部三甲整单（联影智能已卡位+关系壁垒）；不自研影像算法（那是市场 B 的红海，合规成本高）；不等拿证再启动（我们卖的是信息化升级，LLM 流程模块不需要三类证，算法模块用已持证第三方）。</div>
+</section>
+
+<section class="card" id="s7"><h2>七、风险清单</h2>
+<ol>
+<li><b>第一家标杆难产</b>：90 天 MVP 与 20 个验收用例仍是计划状态。没有第一家跑通，"升级窗口"就是 PPT——这是当前最大的单一风险。</li>
+<li><b>传统厂商醒过来</b>：东软/创业慧康/东华账上都有 AI 团队，一旦它们从"赋能模块"转向"重构系统"，渠道优势会碾压。窗口期可能只有 2–3 年。</li>
+<li><b>医院付费能力</b>：B 端为 AI 付费的意愿极低，必须算出"省多少钱"的硬账；县域项目账期长，现金流要留余量。</li>
+<li><b>LLM 下沉水土不服</b>：三甲训练的大模型下沉基层有失败先例（方言、数据不完整、增加核对负担）——产品必须按县域真实数据调优，不能拿三甲模型直接套用。</li>
+<li><b>医保政策反复</b>：12 项 AI 辅助诊断进乙类目录是单源消息，需跟踪官方文件；"扩展项"红线短期不会变。</li>
+<li><b>算法依赖</b>：集成第三方算法意味着把部分产品力交出去——需要签好 SLA 与替换条款，避免被单一算法厂商绑定。</li>
+</ol>
+</section>
+
+<section class="card" id="s8"><h2>八、数据缺口与假设</h2>
+<ul>
+<li>PACS <b>存量装机套数</b>：无直接数据，用二级以上医院数（1.58 万家）做上限、按 90% 覆盖率推算 1.4 万套——是推算不是统计。</li>
+<li>PACS/RIS <b>软件端厂商份额</b>：近 2 年无公开研报（因中国无独立 PACS 软件赛道）；只有 2017–2018 年整体医疗信息化老份额。</li>
+<li>医院<b>"升级 vs 重建"偏好</b>：无直接调研，只有痛点/信创/付费能力三方面的间接证据。</li>
+<li><b>"LLM+PACS/RIS 升级"零竞品</b>：是全网检索的数据事实，不是逻辑推导——但检索不可能穷尽，需持续监测。</li>
+<li>市场规模为第三方研报口径，各家差异大；SAM/SOM 中的渗透率与均价为假设，见正文。</li>
+</ul>
+<p class="src">关键数据源：艾瑞咨询《中国医疗信息化行业研究报告》、中国软件行业协会影像平台软件报告、中国政府采购网（2025 年中标价）、卫健委统计公报、国家医保局、格隆汇（讯飞/商汤）、第一财经（医院付费访谈）、itnonline/RSNA（替换周期）。v1 简报数据（PACS 规模、AI 影像增速、定价锚点、县域四单）继续有效，不再重复列出。</p>
+</section>
+
+<footer>
+<p>本报告 v2 按用户纠偏口径重做，供 AI Native RIS/PACS 商业计划内部讨论使用，不构成投资建议。"单源/存疑"标注数据引用时请注意口径风险。</p>
+<p>编制日期：2026-10-12 · v2</p>
+</footer>
+</div>
+</body>
+</html>
