@@ -34,6 +34,11 @@ const known = {
     description: '10 种生产级 agent 方案、harness 六大件、五种常见模式、6 条共通规则与选型建议。',
     category: '学习笔记', date: '2026-10-13', order: 3,
   },
+  '/ai-notes/realtime-venus/': {
+    title: 'Realtime-Venus 深度调研：开源实时多模态 Agent 系统',
+    description: '蚂蚁+清华开源的 OpenAI Realtime API 替代：双循环架构、三组件细节、benchmark 声明与验证、部署现实与风险判断。',
+    category: '学习笔记', date: '2026-10-18', order: 5,
+  },
 };
 
 function htmlFiles(dir) {

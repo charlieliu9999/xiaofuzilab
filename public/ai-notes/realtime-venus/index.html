@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Realtime-Venus 深度调研报告</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f7f5f0;
+        --surface: #fffdf9;
+        --surface-2: #efeadf;
+        --ink: #1c1a16;
+        --ink-2: #4c463c;
+        --ink-3: #7d7668;
+        --line: #ddd5c3;
+        --accent: #b3401e;        /* vermilion */
+        --accent-soft: #f6e3da;
+        --teal: #0f6a5c;
+        --teal-soft: #dceee9;
+        --amber: #9a6a00;
+        --amber-soft: #f4ead2;
+        --bar-a: #b3401e;
+        --bar-b: #8a8378;
+        --bar-c: #c9bfa9;
+        --good: #0f6a5c;
+        --bad: #b3401e;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121110;
+          --surface: #1b1a17;
+          --surface-2: #24221e;
+          --ink: #ece7dc;
+          --ink-2: #c3bcac;
+          --ink-3: #8f887b;
+          --line: #3a372f;
+          --accent: #e0704f;
+          --accent-soft: #3a241c;
+          --teal: #4db8a4;
+          --teal-soft: #1d2f2a;
+          --amber: #d9a83e;
+          --amber-soft: #332a15;
+          --bar-a: #e0704f;
+          --bar-b: #8f887b;
+          --bar-c: #57534a;
+          --good: #4db8a4;
+          --bad: #e0704f;
+          color-scheme: dark;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Noto Sans SC", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+        font-size: 16px;
+        line-height: 1.75;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 920px; margin: 0 auto; padding: 0 20px 80px; }
+      .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+      /* ---------- header ---------- */
+      header { padding: 44px 0 8px; }
+      .kicker {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12.5px; letter-spacing: .14em;
+        color: var(--accent); font-weight: 600;
+        text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Noto Serif SC", serif;
+        font-size: clamp(30px, 5.4vw, 46px);
+        font-weight: 900; line-height: 1.25;
+        margin: 12px 0 6px;
+      }
+      .subtitle { font-size: clamp(16px, 2.6vw, 19px); color: var(--ink-2); margin: 0 0 18px; line-height: 1.6; }
+      .meta-line { font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px 0; display: flex; flex-wrap: wrap; gap: 6px 22px; }
+      .meta-line b { color: var(--ink-2); font-weight: 600; }
+
+      /* ---------- verdict ---------- */
+      .verdict {
+        background: var(--surface);
+        border: 1.5px solid var(--ink);
+        border-radius: 6px;
+        padding: 22px 24px;
+        margin: 26px 0 8px;
+        box-shadow: 5px 5px 0 var(--surface-2);
+      }
+      .verdict .v-label { font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .12em; color: var(--accent); font-weight: 600; }
+      .verdict p { margin: 8px 0 0; font-size: 16.5px; line-height: 1.8; }
+      .verdict strong { color: var(--accent); font-weight: 700; }
+
+      /* ---------- KPI strip ---------- */
+      .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin: 22px 0 6px; }
+      .kpi { background: var(--surface); padding: 14px 16px; }
+      .kpi .n { font-family: "IBM Plex Mono", monospace; font-size: 22px; font-weight: 600; line-height: 1.2; }
+      .kpi .n small { font-size: 13px; color: var(--ink-3); font-weight: 400; }
+      .kpi .l { font-size: 12.5px; color: var(--ink-3); margin-top: 3px; line-height: 1.5; }
+      @media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+
+      /* ---------- sections ---------- */
+      section { margin-top: 52px; }
+      h2 {
+        font-family: "Noto Serif SC", serif;
+        font-size: 25px; font-weight: 900; line-height: 1.35;
+        margin: 0 0 6px; padding-bottom: 10px;
+        border-bottom: 2px solid var(--ink);
+        display: flex; align-items: baseline; gap: 12px;
+      }
+      h2 .no { font-family: "IBM Plex Mono", monospace; font-size: 15px; color: var(--accent); font-weight: 600; }
+      h3 { font-size: 18px; font-weight: 700; margin: 30px 0 8px; line-height: 1.5; }
+      h3 .tag { vertical-align: 2px; margin-left: 8px; }
+      p { margin: 10px 0; }
+      ul, ol { margin: 10px 0; padding-left: 22px; }
+      li { margin: 5px 0; }
+      li::marker { color: var(--accent); }
+      a { color: var(--teal); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+      code { font-family: "IBM Plex Mono", monospace; font-size: .88em; background: var(--surface-2); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+      .src { font-size: 12.5px; color: var(--ink-3); }
+      .src a { color: var(--ink-3); }
+
+      .tag {
+        display: inline-block; font-size: 11.5px; font-weight: 700; line-height: 1;
+        padding: 4px 8px; border-radius: 99px; white-space: nowrap;
+      }
+      .tag-official { background: var(--teal-soft); color: var(--teal); }
+      .tag-third { background: var(--amber-soft); color: var(--amber); }
+      .tag-warn { background: var(--accent-soft); color: var(--accent); }
+
+      .callout {
+        border-radius: 6px; padding: 16px 18px; margin: 18px 0;
+        font-size: 15px; line-height: 1.75;
+      }
+      .callout .c-title { font-weight: 700; margin-bottom: 4px; }
+      .callout-warn { background: var(--accent-soft); border: 1px solid var(--accent); }
+      .callout-note { background: var(--surface-2); border: 1px solid var(--line); }
+      .callout-good { background: var(--teal-soft); border: 1px solid var(--teal); }
+
+      /* ---------- diagram ---------- */
+      .diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px 16px 12px; margin: 20px 0; overflow-x: hidden; }
+      .diagram svg { width: 100%; height: auto; display: block; }
+      .diagram figcaption { font-size: 13px; color: var(--ink-3); text-align: center; padding: 10px 8px 4px; line-height: 1.6; }
+
+      /* ---------- component cards ---------- */
+      .comp-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 18px 0; }
+      .comp {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px;
+      }
+      .comp h4 { margin: 0 0 4px; font-size: 16.5px; font-weight: 700; }
+      .comp h4 .en { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--accent); font-weight: 600; display: block; letter-spacing: .04em; }
+      .comp p, .comp li { font-size: 14.5px; }
+      .comp ul { margin: 6px 0 0; }
+
+      /* ---------- tables ---------- */
+      .tbl-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+      table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.6; }
+      th, td { padding: 10px 14px; text-align: left; vertical-align: top; }
+      thead th { background: var(--surface-2); font-weight: 700; border-bottom: 1.5px solid var(--line); white-space: nowrap; }
+      tbody tr + tr td { border-top: 1px solid var(--line); }
+      td.num, th.num { text-align: right; font-family: "IBM Plex Mono", monospace; font-size: 13.5px; white-space: nowrap; }
+      .best { font-weight: 700; color: var(--teal); }
+      .lose { color: var(--accent); }
+      @media (max-width: 640px) {
+        table { font-size: 13px; }
+        th, td { padding: 8px 10px; }
+        thead th { white-space: normal; }
+        td code, th code { white-space: normal; overflow-wrap: anywhere; }
+        td.num, th.num { font-size: 12.5px; }
+      }
+      .tbl-note { font-size: 12.5px; color: var(--ink-3); margin: -6px 0 14px; }
+
+      /* ---------- bar charts ---------- */
+      .chart { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px 14px; margin: 18px 0; }
+      .chart h4 { margin: 0 0 2px; font-size: 15.5px; font-weight: 700; }
+      .chart .ch-sub { font-size: 12.5px; color: var(--ink-3); margin-bottom: 14px; }
+      .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--ink-2); margin-bottom: 12px; }
+      .legend .sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+      .bgroup { margin-bottom: 14px; }
+      .bgroup .g-label { font-size: 13.5px; font-weight: 600; margin-bottom: 5px; }
+      .brow { display: grid; grid-template-columns: 118px 1fr 52px; align-items: center; gap: 10px; margin: 3px 0; }
+      .brow .b-name { font-size: 12.5px; color: var(--ink-2); text-align: right; line-height: 1.35; }
+      .brow .b-track { background: var(--surface-2); border-radius: 4px; height: 16px; overflow: hidden; }
+      .brow .b-fill { height: 100%; border-radius: 4px; }
+      .brow .b-val { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; font-weight: 600; }
+      .fill-a { background: var(--bar-a); }
+      .fill-b { background: var(--bar-b); }
+      .fill-c { background: var(--bar-c); }
+      @media (max-width: 520px) {
+        .brow { grid-template-columns: 92px 1fr 46px; gap: 7px; }
+      }
+
+      /* ---------- data bars (training corpus) ---------- */
+      .drow { display: grid; grid-template-columns: 208px 1fr 64px; align-items: center; gap: 10px; margin: 4px 0; font-size: 13px; }
+      .drow .d-name { color: var(--ink-2); line-height: 1.4; }
+      .drow .d-track { background: var(--surface-2); border-radius: 4px; height: 14px; overflow: hidden; }
+      .drow .d-fill { height: 100%; background: var(--teal); border-radius: 4px; }
+      .drow .d-fill.audio { background: var(--bar-b); }
+      .drow .d-val { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; text-align: right; }
+      @media (max-width: 560px) { .drow { grid-template-columns: 128px 1fr 54px; gap: 7px; font-size: 12px; } }
+
+      /* ---------- flow steps ---------- */
+      .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+      .step { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+      .step .s-no { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--accent); font-weight: 600; letter-spacing: .1em; }
+      .step h5 { margin: 4px 0 6px; font-size: 15.5px; }
+      .step p { font-size: 13.5px; color: var(--ink-2); margin: 0; line-height: 1.65; }
+      @media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
+
+      .lifecycle { font-family: "IBM Plex Mono", monospace; font-size: 13px; background: var(--surface-2); border-radius: 6px; padding: 12px 16px; overflow-x: auto; white-space: nowrap; margin: 12px 0; }
+
+      /* ---------- open questions ---------- */
+      .oq { list-style: none; padding: 0; margin: 14px 0; }
+      .oq li { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; margin: 8px 0; font-size: 15px; display: flex; gap: 12px; }
+      .oq li::marker { content: none; }
+      .oq .q-mark { font-family: "IBM Plex Mono", monospace; font-weight: 600; color: var(--amber); flex: none; }
+
+      /* ---------- sources ---------- */
+      .sources { font-size: 13.5px; }
+      .sources li { margin: 7px 0; word-break: break-all; }
+      .sources .s-kind { font-weight: 700; color: var(--ink-2); }
+
+      footer { margin-top: 60px; border-top: 1px solid var(--line); padding-top: 16px; font-size: 12.5px; color: var(--ink-3); line-height: 1.7; }
+
+      .toc { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 20px; margin: 24px 0 0; }
+      .toc .t-title { font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .12em; color: var(--ink-3); font-weight: 600; margin-bottom: 8px; }
+      .toc ol { margin: 0; padding-left: 20px; font-size: 14.5px; columns: 2; column-gap: 32px; }
+      .toc li { margin: 3px 0; break-inside: avoid; }
+      .toc a { color: var(--ink); text-decoration: none; }
+      .toc a:hover { color: var(--accent); text-decoration: underline; }
+      @media (max-width: 560px) { .toc ol { columns: 1; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="kicker">Deep Research · 深度技术调研</div>
+        <h1>Realtime-Venus：双循环实时多模态 Agent 系统调研</h1>
+        <p class="subtitle">蚂蚁集团 Venus Team 与清华大学的开源全双工音视频 Agent 系统——架构、benchmark 真伪、部署现实，以及它到底能不能算「OpenAI Realtime API 的开源替代」。</p>
+        <div class="meta-line">
+          <span><b>调研时间</b> 2026-10-17 / 18</span>
+          <span><b>论文</b> arXiv:2609.13814（v3，2026-09-23 修订）</span>
+          <span><b>标注</b> <span class="tag tag-official">官方声称</span> 论文 / 模型卡 / 官方仓库 · <span class="tag tag-third">第三方验证</span> 独立分析与实验</span>
+        </div>
+      </header>
+
+      <div class="verdict">
+        <div class="v-label">总体判断</div>
+        <p>Realtime-Venus 是一套<strong>研究级、可下载、可魔改的原型系统，而不是生产可用的「OpenAI Realtime API 开源替代」</strong>。它的 dual-loop 架构（前台 1 秒 chunk 全双工交互 + 后台 Harness 异步执行、结果经私有通道带回对话）是对「边聊边做」这一真实矛盾的完整建模，权重与代码以 Apache-2.0 完整开源。但截至 2026-10-18：<strong>全部 benchmark 数字均为作者自报、评测脚本未公开、无任何独立复现</strong>；唯一真实的第三方实验还给出了负面信号；无毫秒级延迟数据、无托管推理服务、无 API 与定价。适合做全双工 / 异步委托方向的预研原型，不适合直接作为智能眼镜、车载助手的量产基座。</p>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="n">2 × 9B</div><div class="l">开源模型：Omni（音视频）+ Audio（纯语音），Apache-2.0</div></div>
+        <div class="kpi"><div class="n">188 <small>stars</small></div><div class="l">GitHub 仓库（2026-09-16 创建，9 commits，13 forks）</div></div>
+        <div class="kpi"><div class="n">0</div><div class="l">托管推理服务 / 第三方部署——HF 官方注明无任何 Inference Provider 上线</div></div>
+        <div class="kpi"><div class="n">0</div><div class="l">独立复现——无第三方评测、无 leaderboard 条目</div></div>
+        <div class="kpi"><div class="n">A100</div><div class="l">官方在线 duplex demo 的最低硬件要求（单卡）</div></div>
+        <div class="kpi"><div class="n">280<small> 万+</small></div><div class="l">后训练样本（9 类），只更新 Thinker、声学解码器冻结</div></div>
+      </div>
+
+      <nav class="toc">
+        <div class="t-title">目录</div>
+        <ol>
+          <li><a href="#arch">三组件架构与双循环机制</a></li>
+          <li><a href="#training">训练方法与数据</a></li>
+          <li><a href="#bench">Benchmark 声明与限定条件</a></li>
+          <li><a href="#verify">第三方验证：基本为零</a></li>
+          <li><a href="#deploy">代码与部署现实</a></li>
+          <li><a href="#vs">与 OpenAI Realtime API 对照</a></li>
+          <li><a href="#scenes">智能眼镜 / 车载助手场景</a></li>
+          <li><a href="#risks">风险与局限</a></li>
+          <li><a href="#open">无法确认 / 开放问题</a></li>
+          <li><a href="#final">综合判断与来源</a></li>
+        </ol>
+      </nav>
+
+      <!-- ============ 1. ARCHITECTURE ============ -->
+      <section id="arch">
+        <h2><span class="no">01</span>三组件架构与双循环机制</h2>
+        <p>系统由两个 9B 前端模型和一个执行框架组成：<b>Realtime-Venus-Omni</b> 负责音视频持续感知，<b>Realtime-Venus-Audio</b> 是原生全双工语音模型，<b>Realtime-Venus-Harness</b> 把复杂推理、搜索和工具调用委派给后台异步执行。核心设计是把「实时交互」和「耗时任务」拆成两条并行运行的链路——前台对话永不因等待任务而中断。</p>
+
+        <figure class="diagram" style="margin:20px 0;">
+          <svg viewBox="0 0 860 430" role="img" aria-label="Dual-loop 双循环架构示意图">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+              </marker>
+              <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"></path>
+              </marker>
+            </defs>
+            <!-- user -->
+            <rect x="330" y="14" width="200" height="52" rx="8" fill="var(--surface-2)" stroke="var(--line)"></rect>
+            <text x="430" y="37" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">用户</text>
+            <text x="430" y="56" text-anchor="middle" font-size="11.5" fill="var(--ink-3)">持续音视频输入 · 随时说话 / 打断</text>
+            <!-- front loop -->
+            <rect x="180" y="110" width="500" height="118" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6"></rect>
+            <text x="430" y="136" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">前台交互循环 · 延迟敏感</text>
+            <text x="430" y="157" text-anchor="middle" font-size="12" fill="var(--ink-2)">Realtime-Venus-Omni / Audio（9B）· 以 1 秒 chunk 持续感知与原生语音生成</text>
+            <text x="430" y="182" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace">&lt;|listen|&gt; 继续感知 · &lt;|speak|&gt; 说话 · &lt;|turn_eos|&gt; 结束话轮</text>
+            <text x="430" y="206" text-anchor="middle" font-size="12" fill="var(--ink-3)">说话与后台执行期间，感知保持活跃；未说出的内容可修订</text>
+            <!-- harness -->
+            <rect x="180" y="300" width="500" height="104" rx="10" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.6"></rect>
+            <text x="430" y="326" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">后台能力循环 · Realtime-Venus-Harness</text>
+            <text x="430" y="348" text-anchor="middle" font-size="12" fill="var(--ink-2)">Capture 捕获 → Dispatch 路由 → 执行 → Return 回传</text>
+            <text x="430" y="370" text-anchor="middle" font-size="12" fill="var(--ink-2)">对隔离的会话快照执行；默认后端：Codex CLI / Gemini API</text>
+            <text x="430" y="390" text-anchor="middle" font-size="12" fill="var(--ink-3)">QUEUED → RUNNING → COMPLETED → DELIVERING → DELIVERED</text>
+            <!-- arrows user<->front -->
+            <line x1="392" y1="66" x2="392" y2="104" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#arr)"></line>
+            <line x1="468" y1="104" x2="468" y2="72" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#arr)"></line>
+            <text x="330" y="92" text-anchor="middle" font-size="11.5" fill="var(--ink-2)">媒体流</text>
+            <text x="530" y="92" text-anchor="middle" font-size="11.5" fill="var(--ink-2)">原生语音</text>
+            <!-- delegate down -->
+            <line x1="300" y1="228" x2="300" y2="294" stroke="var(--teal)" stroke-width="1.8" marker-end="url(#arrT)"></line>
+            <text x="300" y="252" text-anchor="middle" font-size="12" font-weight="600" fill="var(--teal)" font-family="IBM Plex Mono, monospace">&lt;delegate&gt; 请求</text>
+            <text x="300" y="270" text-anchor="middle" font-size="11" fill="var(--ink-3)">证据快照在开标签时刻固定</text>
+            <!-- backend up -->
+            <line x1="560" y1="294" x2="560" y2="234" stroke="var(--teal)" stroke-width="1.8" marker-end="url(#arrT)"></line>
+            <text x="560" y="252" text-anchor="middle" font-size="12" font-weight="600" fill="var(--teal)" font-family="IBM Plex Mono, monospace">&lt;backend&gt; 私有通道</text>
+            <text x="560" y="270" text-anchor="middle" font-size="11" fill="var(--ink-3)">前端决定何时说出</text>
+          </svg>
+          <figcaption>Dual-loop 运行时：两条循环只交换两样东西——以请求因果上下文为界的 task package，和绑定到原会话的 prepared reply。内容与措辞归 Harness，时机与语音输出归前端。</figcaption>
+        </figure>
+
+        <div class="comp-grid">
+          <div class="comp">
+            <h4><span class="en">REALTIME-VENUS-OMNI</span>音视频持续感知前端 <span class="tag tag-official">官方声称</span></h4>
+            <ul>
+              <li><b>构成</b>：改编自 MiniCPM-o 4.5 的 Omni-Flow 架构——SigLIP2 视觉编码器 + Whisper-Medium 音频编码器 + Qwen3-8B 主干；语音用离散 S3 token + streaming flow-matching 解码器（参考音频来自 system prompt）；上下文 40,960 tokens，BF16。</li>
+              <li><b>流式组织</b>：以 1 秒为单元，每单元交错当前帧视觉 token 与时间对齐的音频特征（约 10 个音频特征/秒）。每单元由 LLM 预测 <code>&lt;|listen|&gt;</code> 或 <code>&lt;|speak|&gt;</code>；<code>&lt;|chunk_eos|&gt;</code> 关闭语音 chunk，<code>&lt;|turn_eos|&gt;</code> 结束话轮。</li>
+              <li><b>Omni-Proactive</b>：持续观看 + 聆听，无需唤醒词，事件值得回应时主动发起语音。</li>
+              <li><b>免训练长视频记忆</b>：外部记忆模块以运动补偿预测代价做视觉门控决定归档哪些帧，检索用 MaxSim 风格 token 级匹配 + MAD 加权 + MMR；HF 卡示例 <code>model.use_memory(memory_minutes=40)</code>，检索上限 96 历史帧 + 4 近帧。自报在 60–90 分钟 LVOmniBench 子集上 +5.88pp——但论文承认增益依赖 backbone（MiniCPM-o 4.5 在某些时长 bin 上记忆反而下降）。</li>
+            </ul>
+          </div>
+          <div class="comp">
+            <h4><span class="en">REALTIME-VENUS-AUDIO</span>原生全双工语音 <span class="tag tag-official">官方声称</span></h4>
+            <ul>
+              <li>同一流式主干上<b>单独训练</b>的音频专用 checkpoint：去掉 ViT 视觉分支，只处理流式音频；输入音频 + 文本，输出文本 + 原生语音。</li>
+              <li><b>Thinker–Talker 架构</b>：LLM（Thinker）联合预测交互控制 token、前台文本与 delegate 文本；语音解码器（Talker）从 LLM 隐状态生成 S3 token；训练中声学解码器<b>冻结</b>，只更新 Thinker。</li>
+              <li><b>打断语义</b>：按会话功能而非纯 VAD 区分重叠语音——停顿 / 背景噪声 → <code>&lt;|listen|&gt;</code>；backchannel（「嗯 / 对」）→ 保持 <code>&lt;|speak|&gt;</code> 继续说；真正的打断（纠正 / 重定向 / 新请求）→ <code>&lt;|turn_eos|&gt;</code> 终止过期回复：已播放音频不变，未说部分 stop / reject，并做 repair / update 或 redirect / follow-up。</li>
+            </ul>
+          </div>
+          <div class="comp">
+            <h4><span class="en">REALTIME-VENUS-HARNESS</span>后台异步执行框架 <span class="tag tag-official">官方声称</span></h4>
+            <p style="margin-top:6px;">Harness 与两个前端共享，但<b>不在模型权重里，在 GitHub 仓库中</b>。它是一个独立 Python 包（<code>pip install -e ./harness</code>，Python 3.11 / 3.12），核心是 <code>DelegateHarness</code> + <code>DelegateBackend</code> 协议（<code>plan / execute / oralize / aclose</code>）。</p>
+            <div class="steps">
+              <div class="step"><div class="s-no">STAGE 1</div><h5>Capture 捕获</h5><p>协议门跨 chunk 组装 <code>&lt;delegate&gt;…&lt;/delegate&gt;</code> span；证据快照 X<sub>i</sub> 在<b>开标签时刻固定</b>（时戳 + 序列 fence，media 裁剪到允许窗口，此后观测不能改写）——即「因果任务捕获」；一个请求至多生成一个 work item。</p></div>
+              <div class="step"><div class="s-no">STAGE 2</div><h5>Dispatch 路由</h5><p>注册表 C = {γ<sub>mm</sub> 多模态直接回答， γ<sub>gen</sub> 通用多步任务} ∪ skills；router 基于 capability contract + 紧凑证据摘要做<b>一次</b>模型决策选 capability 与参数（不看 raw media），schema 校验拒绝非法选择。</p></div>
+              <div class="step"><div class="s-no">STAGE 3</div><h5>Return 回传</h5><p>adapter 把执行结果 polish 成口语 reply 文本、去掉保留控制 token，包成私有 <code>&lt;backend&gt;</code> 消息；经<b>新鲜度检查</b>判断结果是否过期，再做 playback-aware 投递。</p></div>
+            </div>
+            <div class="lifecycle">生命周期：QUEUED → RUNNING → COMPLETED → DELIVERING → DELIVERED ｜ FAILED ｜ CANCELLING → CANCELLED</div>
+            <div class="callout callout-warn" style="margin-bottom:4px;">
+              <div class="c-title">关键事实：默认执行后端是闭源外部服务</div>
+              Harness 的默认任务执行后端是 <b>Codex CLI</b>（<code>codex app-server</code>，需 Codex 登录）或 <b>Gemini API</b>（自备 key）。也就是说，这个「开源」系统的关键执行环节依赖闭源外部服务——9B 前端本身不做复杂推理与工具执行。
+            </div>
+          </div>
+        </div>
+
+        <h3>「带回当前对话」是怎么实现的</h3>
+        <p><span class="tag tag-official">官方声称</span> 前台循环连续处理输入媒体、更新会话状态 s<sub>k</sub>，决定 listen / speak / yield；形式化为 (s<sub>k+1</sub>, O<sub>k</sub>) = F<sub>m</sub>(s<sub>k</sub>, x<sub>k</sub><sup>m</sup>, b<sub>k</sub>; η<sub>k</sub>)，输出 O<sub>k</sub> 包含交互控制、前台文本、delegation 文本与语音 token，其中只有前台文本与语音面向用户。后台结果经私有 background channel 回到原会话，在 chunk 边界被接纳为 background input b<sub>k</sub>，成为前端的私有上下文；前端再按已播放语音时长自适应调度每 chunk 的文本 token 数，决定何时把结果说出来。</p>
+        <div class="callout callout-good">
+          <div class="c-title"><span class="tag tag-third">第三方验证</span> 报告中最有价值的一点</div>
+          第三方分析 orcarouter 指出：后台任务对<b>隔离的会话快照</b>执行，对话继续推进不会污染长任务——这是多数「边聊边做」设计在实践中倒下的故障模式，也是这份报告最值得借鉴的设计。<span class="src">来源：<a href="https://www.orcarouter.ai/blog/realtime-venus-quiet-release">orcarouter.ai 分析</a>（verified live）</span>
+        </div>
+        <p class="src">本节来源：论文 §3 / §4 / §5，<a href="https://arxiv.org/html/2609.13814v1">arxiv.org/html/2609.13814v1</a>（verified live）；Harness 代码 <a href="https://github.com/inclusionAI/Realtime-Venus/tree/main/harness">github.com/inclusionAI/Realtime-Venus/tree/main/harness</a>（verified live）。</p>
+      </section>
+
+      <!-- ============ 2. TRAINING ============ -->
+      <section id="training">
+        <h2><span class="no">02</span>训练方法与 9B 取舍</h2>
+        <p><span class="tag tag-official">官方声称</span> 统一后训练语料 <b>280 万+样本、9 类</b>。能力配比：离线理解约 56%，proactive duplex 约 37%，delegation 约 6%。覆盖中文、英文与 code-switch；duplex / delegation 数据天然含打断样本。</p>
+
+        <div class="chart">
+          <h4>后训练语料构成（样本数）</h4>
+          <div class="ch-sub">论文 §4.5（verified live）。Video 类为 Omni 独占（约 70%），Audio 类两模型共享（约 30%）。</div>
+          <div class="drow"><span class="d-name">通用 AV 理解（Video）</span><span class="d-track"><span class="d-fill" style="width:100%"></span></span><span class="d-val">936k</span></div>
+          <div class="drow"><span class="d-name">通用音频理解（Audio）</span><span class="d-track"><span class="d-fill audio" style="width:50.2%"></span></span><span class="d-val">470k</span></div>
+          <div class="drow"><span class="d-name">Visual-proactive duplex（Video）</span><span class="d-track"><span class="d-fill" style="width:48.5%"></span></span><span class="d-val">454k</span></div>
+          <div class="drow"><span class="d-name">Speech-in duplex（Video）</span><span class="d-track"><span class="d-fill" style="width:33.7%"></span></span><span class="d-val">315k</span></div>
+          <div class="drow"><span class="d-name">口语问答（Audio）</span><span class="d-track"><span class="d-fill audio" style="width:21.9%"></span></span><span class="d-val">205k</span></div>
+          <div class="drow"><span class="d-name">Omni-proactive duplex（Video）</span><span class="d-track"><span class="d-fill" style="width:21.5%"></span></span><span class="d-val">201k</span></div>
+          <div class="drow"><span class="d-name">Speech-only duplex（Audio）</span><span class="d-track"><span class="d-fill audio" style="width:10.7%"></span></span><span class="d-val">100k</span></div>
+          <div class="drow"><span class="d-name">Delegate（Video）</span><span class="d-track"><span class="d-fill" style="width:10.1%"></span></span><span class="d-val">95k</span></div>
+          <div class="drow"><span class="d-name">Delegate（Audio）</span><span class="d-track"><span class="d-fill audio" style="width:9.6%"></span></span><span class="d-val">90k</span></div>
+        </div>
+
+        <ul>
+          <li><b>数据管线</b>（§6）：场景规划 → 副语言 / 声学实现（迟疑、笑声、呼吸、重叠、环境音）→ 时间对齐物化；duplex 目标（继续说 / 等待 / 让出话轮 / 停掉排队输出 / 修订回复）与 delegation 目标（保留 / 取消 / 修订 / 重试 / 回退在途工作）在同一时间轴上联合监督。</li>
+          <li><b>训练配方</b>：单次后训练 pass 混合三类数据；loss 只在 response span（排除 system / user / media 占位）；per-sample 归一化；长回答用 LM-head 分块 CE + recomputation；<b>只更新 Thinker</b>。</li>
+          <li><b>9B 取舍</b>：沿用 MiniCPM-o 4.5 的 9B 量级，目标是单机可部署的实时流式推理（HF 卡示例为 <code>.cuda()</code> 单卡加载）；代价是复杂推理 / 工具执行必须外包给 Harness 后端。</li>
+        </ul>
+        <div class="callout callout-note">
+          <div class="c-title"><span class="tag tag-third">第三方验证</span> 「单机可部署」要打个问号</div>
+          orcarouter 指出：9B BF16 ≈ 18GB 权重，实时 duplex 推理仍需 serious GPU，「够不着 MiniCPM-o 家族原本面向的笔记本部署」。论文未来工作也承认，需要验证该架构在百 B 量级是否保持优势。
+        </div>
+      </section>
+
+      <!-- ============ 3. BENCHMARKS ============ -->
+      <section id="bench">
+        <h2><span class="no">03</span>Benchmark 声明与限定条件</h2>
+        <p>以下数字<b>全部为作者自报</b>（论文表格，verified live），先看数字，再看论文自己写下的限定条件——后者决定这些数字能信几分。</p>
+
+        <h3>Omni 视频流式理解 <span class="tag tag-official">官方声称</span></h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Benchmark</th><th class="num">Realtime-Venus-Omni</th><th>备注</th></tr></thead>
+            <tbody>
+              <tr><td>StreamingBench</td><td class="num best">70.2</td><td>online 模型第一；离线基线 Gemini-3.5-Flash 为 77.3</td></tr>
+              <tr><td>OVO-Bench</td><td class="num best">64.7</td><td>online 模型第一</td></tr>
+              <tr><td>Daily-Omni</td><td class="num best">81.3</td><td>online 模型第一；相对基座仅约 +1pp（见下方质疑）</td></tr>
+              <tr><td>ProactiveVideoQA</td><td class="num">46.2</td><td class="lose">输给自己的基座 MiniCPM-o 4.5（47.5）</td></tr>
+              <tr><td>OmniPro</td><td class="num best">29.0</td><td>online 模型第一</td></tr>
+              <tr><td>WorldSense</td><td class="num">54.0</td><td class="lose">输给自己的基座 MiniCPM-o 4.5（54.2）</td></tr>
+              <tr><td>OmniVideoBench</td><td class="num best">39.2</td><td>online 模型第一</td></tr>
+              <tr><td>LVOmniBench</td><td class="num best">38.9</td><td>online 模型第一</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="tbl-note">出处：论文表 2。「8 个中 6 个第一」只统计 online 模型；离线基线 Gemini-3.5-Flash 在 8 项上全部远高，仅作参考单列。</p>
+
+        <h3>Audio 音频理解与口语问答 <span class="tag tag-official">官方声称</span></h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Benchmark</th><th class="num">Realtime-Venus-Audio</th><th>对照</th></tr></thead>
+            <tbody>
+              <tr><td>MMAU</td><td class="num best">78.0</td><td>对比模型最高（论文表 4）</td></tr>
+              <tr><td>MMAU-Pro</td><td class="num best">63.2</td><td>对比模型最高</td></tr>
+              <tr><td>MMAR</td><td class="num">65.6</td><td>第二；Qwen3-Omni 66.4 第一</td></tr>
+              <tr><td>MMSU</td><td class="num">66.8</td><td>Qwen3-Omni 69.0、Fun-Audio-Chat 67.8 更高</td></tr>
+              <tr><td>AlpacaEval（口语问答）</td><td class="num best">4.81</td><td>并列最高（论文表 5）</td></tr>
+              <tr><td>Llama Questions</td><td class="num best">83.8</td><td>最高</td></tr>
+              <tr><td>Speech TriviaQA</td><td class="num">75.7</td><td>第二；Qwen3-Omni 75.9</td></tr>
+              <tr><td>Speech CMMLU</td><td class="num best">67.8</td><td>最高——中文语音是其强项之一</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>全双工：续话率领先，打断响应并不领先 <span class="tag tag-official">官方声称</span></h3>
+        <div class="chart">
+          <h4>FDB v1.5 续话率（越高越好）</h4>
+          <div class="ch-sub">用户发出 backchannel / 指向他人的语音 / 背景语音时，模型正确「不被带偏、继续说」的比例。论文表 6。</div>
+          <div class="legend">
+            <span><span class="sw fill-a" style="background:var(--bar-a)"></span>Realtime-Venus-Audio</span>
+            <span><span class="sw" style="background:var(--bar-b)"></span>Gemini 3.1 Live</span>
+            <span><span class="sw" style="background:var(--bar-c)"></span>GPT-4o</span>
+          </div>
+          <div class="bgroup"><div class="g-label">Backchannel（「嗯 / 对」类附和）</div>
+            <div class="brow"><span class="b-name">Venus-Audio</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:97%"></span></span><span class="b-val">0.97</span></div>
+            <div class="brow"><span class="b-name">Gemini 3.1 Live</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:95%"></span></span><span class="b-val">0.95</span></div>
+            <div class="brow"><span class="b-name">GPT-4o</span><span class="b-track"><span class="b-fill fill-c" style="display:block;width:70%"></span></span><span class="b-val">0.70</span></div>
+          </div>
+          <div class="bgroup"><div class="g-label">Other-directed（对别人说话）</div>
+            <div class="brow"><span class="b-name">Venus-Audio</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:88%"></span></span><span class="b-val">0.88</span></div>
+            <div class="brow"><span class="b-name">Gemini 3.1 Live</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:66%"></span></span><span class="b-val">0.66</span></div>
+            <div class="brow"><span class="b-name">GPT-4o</span><span class="b-track"><span class="b-fill fill-c" style="display:block;width:2%"></span></span><span class="b-val">0.02</span></div>
+          </div>
+          <div class="bgroup" style="margin-bottom:4px;"><div class="g-label">Background（背景语音）</div>
+            <div class="brow"><span class="b-name">Venus-Audio</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:86%"></span></span><span class="b-val">0.86</span></div>
+            <div class="brow"><span class="b-name">Gemini 3.1 Live</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:66%"></span></span><span class="b-val">0.66</span></div>
+            <div class="brow"><span class="b-name">GPT-4o</span><span class="b-track"><span class="b-fill fill-c" style="display:block;width:4%"></span></span><span class="b-val">0.04</span></div>
+          </div>
+        </div>
+        <div class="callout callout-warn">
+          <div class="c-title">必须同时看到的三个限定（论文自己写的）</div>
+          <ul style="margin:4px 0 0;">
+            <li><b>打断响应率 0.75 并不领先</b>：低于 Joy-Duplex（0.88）、GPT-4o（0.78）、Gemini 3.1 Live（0.77）——论文原文承认 "interruption-response rate is lower than those of Joy-Duplex, GPT-4o, and Gemini 3.1 Live"。</li>
+            <li>Gemini 3.1 Live / GPT-4o 的 FDB v1.5 数字<b>引自其他论文</b>（JoyAI-Talker 论文与 FDB 原论文），非作者实测。</li>
+            <li>自建 delegate benchmark 为<b>内部基准</b>：Omni 总体 75.93% vs Audio 68.89%；Audio 严重<b>过度委托</b>（routine 请求 specificity 仅 39.44%），Omni 则<b>漏委托</b>（external recall 68.33% vs Audio 92.22%）——路由偏差是系统性的，两个模型各偏一头。</li>
+          </ul>
+        </div>
+
+        <h3>工具调用：GPT-Realtime 全面领先 <span class="tag tag-official">官方声称</span></h3>
+        <div class="chart">
+          <h4>FDB-v3 工具调用（%）</h4>
+          <div class="ch-sub">论文表 7。参数准确率与 Pass@1 是 Venus 与 GPT-Realtime 差距最大的地方。</div>
+          <div class="legend">
+            <span><span class="sw" style="background:var(--bar-a)"></span>Venus-Omni</span>
+            <span><span class="sw" style="background:var(--teal)"></span>Venus-Audio</span>
+            <span><span class="sw" style="background:var(--bar-b)"></span>GPT-Realtime</span>
+          </div>
+          <div class="bgroup"><div class="g-label">Tool F1</div>
+            <div class="brow"><span class="b-name">Venus-Omni</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:86%"></span></span><span class="b-val">86.0</span></div>
+            <div class="brow"><span class="b-name">Venus-Audio</span><span class="b-track"><span class="b-fill" style="display:block;width:85%;background:var(--teal)"></span></span><span class="b-val">85.0</span></div>
+            <div class="brow"><span class="b-name">GPT-Realtime</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:87.6%"></span></span><span class="b-val">87.6</span></div>
+          </div>
+          <div class="bgroup"><div class="g-label">参数准确率</div>
+            <div class="brow"><span class="b-name">Venus-Omni</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:53.1%"></span></span><span class="b-val">53.1</span></div>
+            <div class="brow"><span class="b-name">Venus-Audio</span><span class="b-track"><span class="b-fill" style="display:block;width:54.2%;background:var(--teal)"></span></span><span class="b-val">54.2</span></div>
+            <div class="brow"><span class="b-name">GPT-Realtime</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:68%"></span></span><span class="b-val">68.0</span></div>
+          </div>
+          <div class="bgroup" style="margin-bottom:4px;"><div class="g-label">Pass@1</div>
+            <div class="brow"><span class="b-name">Venus-Omni</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:43%"></span></span><span class="b-val">43.0</span></div>
+            <div class="brow"><span class="b-name">Venus-Audio</span><span class="b-track"><span class="b-fill" style="display:block;width:48%;background:var(--teal)"></span></span><span class="b-val">48.0</span></div>
+            <div class="brow"><span class="b-name">GPT-Realtime</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:60%"></span></span><span class="b-val">60.0</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 4. VERIFICATION ============ -->
+      <section id="verify">
+        <h2><span class="no">04</span>第三方验证：基本为零，一次负面信号</h2>
+        <ul>
+          <li><b>无独立复现</b>：orcarouter（2026-09-18）确认「无第三方发表过评测、无 leaderboard 条目」；截至 2026-10-18 本调研仍未发现复现。</li>
+          <li><b>评测脚本未公开</b>：GitHub issue #3（2026-10-15）有人公开索要 "FDBench v1.5 Evaluation Scripts"，无下文。外部无法验证全双工数字。<span class="src">来源：<a href="https://github.com/inclusionAI/Realtime-Venus/issues">github.com/inclusionAI/Realtime-Venus/issues</a>（verified live）</span></li>
+          <li><b>提升幅度被质疑</b>：orcarouter 指出 Daily-Omni 81.3 相对基座仅约 1pp 提升（其引 MiniCPM-o 4.5 为 80.2；论文表 2 基座为 79.4，口径或有 memory 差异），「post-training + runtime 的巨大投入换来约一个点的提升」。</li>
+          <li><b>无毫秒级延迟数字</b>：1 秒 chunk 是设计参数，不是实测 time-to-first-audio——而延迟正是这个品类「实际购买」的指标。</li>
+          <li>其余第三方内容（aiweekly、dev.to、artrealmai）多为论文数字转载，无独立验证；artrealmai 的定性是 "research-grade…will not replace every cloud realtime API tomorrow"。</li>
+        </ul>
+
+        <h3>唯一真实的第三方实验：DuplexAgent-RSI <span class="tag tag-third">第三方验证</span></h3>
+        <p>香港中文大学（深圳）+ Amphion 的 DuplexAgent-RSI 论文（arXiv:2610.11299，2026-10）是目前唯一实际运行 Realtime-Venus-Omni 的公开发表实验。结论对 Venus 不利：其纯自然语言 <code>&lt;delegate&gt;</code> 握手在<b>精确工具调用</b>上显著退化。</p>
+        <div class="chart">
+          <h4>自然语言 delegate 握手 vs 结构化基线（分数）</h4>
+          <div class="ch-sub">DuplexAgent-RSI 实验（verified live）。退化原因据作者分析：到达评分器的 transcript 常常是 delegate span 或回执，而不是答案本身。</div>
+          <div class="legend">
+            <span><span class="sw" style="background:var(--bar-b)"></span>基线</span>
+            <span><span class="sw" style="background:var(--bar-a)"></span>经 Venus 自然语言 delegate 握手</span>
+          </div>
+          <div class="bgroup"><div class="g-label">BFCL（函数调用，平均）</div>
+            <div class="brow"><span class="b-name">基线</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:68.8%"></span></span><span class="b-val">68.8</span></div>
+            <div class="brow"><span class="b-name">Venus 握手</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:46.5%"></span></span><span class="b-val">46.5</span></div>
+          </div>
+          <div class="bgroup"><div class="g-label">BFCL parallel / parallel-multiple（子项）</div>
+            <div class="brow"><span class="b-name">parallel 基线</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:71%"></span></span><span class="b-val">71.0</span></div>
+            <div class="brow"><span class="b-name">parallel 握手</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:35%"></span></span><span class="b-val">35.0</span></div>
+            <div class="brow"><span class="b-name">p-multi 基线</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:53%"></span></span><span class="b-val">53.0</span></div>
+            <div class="brow"><span class="b-name">p-multi 握手</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:22%"></span></span><span class="b-val">22.0</span></div>
+          </div>
+          <div class="bgroup"><div class="g-label">口语问答 OBQA / 语音理解 MMSU</div>
+            <div class="brow"><span class="b-name">OBQA 基线</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:84.1%"></span></span><span class="b-val">84.1</span></div>
+            <div class="brow"><span class="b-name">OBQA 握手</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:41.4%"></span></span><span class="b-val">41.4</span></div>
+            <div class="brow"><span class="b-name">MMSU 基线</span><span class="b-track"><span class="b-fill fill-b" style="display:block;width:64.5%"></span></span><span class="b-val">64.5</span></div>
+            <div class="brow"><span class="b-name">MMSU 握手</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:27.4%"></span></span><span class="b-val">27.4</span></div>
+          </div>
+          <div class="bgroup" style="margin-bottom:4px;"><div class="g-label">FDB-v3 Pass@1（该实验口径）</div>
+            <div class="brow"><span class="b-name">Venus 握手</span><span class="b-track"><span class="b-fill fill-a" style="display:block;width:1%"></span></span><span class="b-val">1.0</span></div>
+          </div>
+        </div>
+        <div class="callout callout-note">
+          <div class="c-title">解读需带 caveat</div>
+          作者结论是：prose（自然语言）握手适合模糊任务，在需要精确函数名 + 参数的场景是系统性短板。<b>但该文是竞品论文</b>（推销自家 DuplexAgent harness），解读有立场——实验本身是真实的第三方运行信号，其结论方向与 Venus 论文表 7 中参数准确率偏低的现象相互印证，但具体幅度不宜直接当作定论。<span class="src">来源：<a href="https://arxiv.org/html/2610.11299">arxiv.org/html/2610.11299</a>（verified live）</span>
+        </div>
+      </section>
+
+      <!-- ============ 5. DEPLOYMENT ============ -->
+      <section id="deploy">
+        <h2><span class="no">05</span>代码与部署现实</h2>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th style="width:22%">项目</th><th>现状</th></tr></thead>
+            <tbody>
+              <tr><td><b>HF 权重</b></td><td><code>inclusionAI/Realtime-Venus</code>，Apache-2.0；双 checkpoint（sharded safetensors + 自定义 Transformers 代码）；含 requirements.txt、参考音色与 Token2wav assets、<code>download_models.py</code>；另有 ModelScope 镜像。</td></tr>
+              <tr><td><b>HF 采用信号</b></td><td>"Downloads last month: -"（<b>不追踪下载量</b>）；"This model isn't deployed by any Inference Provider"（<b>无任何托管推理</b>）。</td></tr>
+              <tr><td><b>GitHub 仓库</b></td><td>2026-09-16 创建；9 commits；<b>188 stars / 13 forks</b>；1 个 release（Android APK beta <code>Realtime-Venus-0918.apk</code>）；目录含 <code>harness/</code>、<code>frontend/</code>、<code>demos/</code>、<code>tests/</code>、<code>install.sh</code> / <code>start.sh</code> / <code>config.json</code> / <code>LEGAL.md</code>。</td></tr>
+              <tr><td><b>Issue 活跃度</b></td><td>仅 2 个 open（#3 索要 FDB 评测脚本；#1 请求接入 audio.cpp）；无讨论热度。</td></tr>
+              <tr><td><b>文档完整度</b></td><td>Harness README（含全部配置字段）、demo 配置指南、Omni / Audio cookbook 示例完整；<b>评测脚本缺失</b>；demo 要求 A100。</td></tr>
+              <tr><td><b>硬件要求</b></td><td>在线 duplex demo <b>至少 1× NVIDIA A100</b>（官方 README）。离线示例为标准 <code>AutoModel.from_pretrained(...).cuda()</code> 单卡加载。9B BF16 约 18GB，加上 KV cache / activation 与双编码器，属「严肃 GPU」级别。</td></tr>
+              <tr><td><b>推理框架</b></td><td><b>无 vLLM / SGLang 等第三方推理框架支持</b>该自定义 duplex 调度，只能用官方 model server 或自研。无消费级单卡（如 24GB）运行报告。</td></tr>
+              <tr><td><b>Demo 形态</b></td><td>浏览器 demo 需自托管（Linux + CUDA，按 <code>install.sh</code> / <code>start.sh</code> 部署，SSH 隧道访问），<b>单会话</b>；serving 链路：模型服务（HTTP 8031）→ session host → 浏览器 UI（HTTP / WebSocket 8032）。Android 仅 beta APK，无下载 / 反馈数据。</td></tr>
+              <tr><td><b>采用信号总览</b></td><td>下载量不可见；188 stars / 13 forks（截至 2026-10-18）；2 个 issue；<b>无公开应用案例、无社区部署报告</b>。</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src">来源：<a href="https://huggingface.co/inclusionAI/Realtime-Venus">huggingface.co/inclusionAI/Realtime-Venus</a>、<a href="https://github.com/inclusionAI/Realtime-Venus">github.com/inclusionAI/Realtime-Venus</a>（均 verified live，2026-10-18）。</p>
+      </section>
+
+<!-- ============ 6. VS OPENAI ============ -->
+<section id="vs">
+<h2><span class="no">06</span>与 OpenAI Realtime API 的能力对照</h2>
+<p>对照基准为 2026 年多家行业文档与实测（含 callsphere 约 280k 会话实测，详见来源）。结论先行：<b>这不是 drop-in 替代</b>——Venus 是「自托管研究级全双工前端 + 异步委托框架」，两者甚至不在同一个产品形态上。</p>
+<div class="tbl-wrap">
+<table>
+<thead><tr><th style="width:15%">维度</th><th style="width:42%">OpenAI Realtime API（2026 现状）</th><th>Realtime-Venus</th></tr></thead>
+<tbody>
+<tr><td><b>协议 / 接口</b></td><td>WebRTC（浏览器 / 移动端推荐）+ WebSocket + <b>SIP</b>（可直接终结 PSTN 来电）；GA（2025-08-28）；ephemeral key 鉴权；官方 SDK / 生态</td><td><b>无云端 API</b>；demo 为自托管 HTTP(8032) + WebSocket 浏览器应用，模型服务 HTTP(8031)；无 SIP / 电话接入、无生产鉴权 / 多租户</td></tr>
+<tr><td><b>工具调用</b></td><td>原生函数调用（含 MCP），可在响应中途触发；FDB-v3 <b>87.6 / 68.0 / 60.0 全面领先</b></td><td>自然语言 <code>&lt;delegate&gt;</code> → Harness 路由到 capability / skill，<b>非 JSON schema 函数调用</b>；FDB-v3 落后（Omni 86.0 / 53.1 / 43.0）；第三方实验显示 prose 握手精确参数传递显著退化</td></tr>
+<tr><td><b>延迟</b></td><td>首包约 300ms（WebRTC），glass-to-glass 中位数 &lt;200ms（实测）；函数调用 +400–800ms</td><td><b>无毫秒级延迟数据</b>；1 秒 chunk 为设计参数；time-to-first-audio 未公布</td></tr>
+<tr><td><b>中文语音</b></td><td>70+ 输入语言（Translate 模型），多语言语音到语音；9 个内置音色</td><td>训练含中文 + 英文 + code-switch；Speech CMMLU 67.8 第一；但<b>无中文语音主观质量评测</b>（MOS 等）；仅单参考音色</td></tr>
+<tr><td><b>打断 / 全双工</b></td><td>server_vad / semantic VAD，<code>audio_interrupted</code> 原生打断</td><td>FDB v1.5 续话率三项第一（0.97 / 0.88 / 0.86），但打断响应 0.75 低于 GPT-4o(0.78) / Gemini 3.1 Live(0.77) / Joy-Duplex(0.88)；数字未被独立复现</td></tr>
+<tr><td><b>运维 / 生态</b></td><td>计费、prompt cache、Agents SDK、LiveKit / Twilio 集成、用量可观测</td><td>需自建 serving；Harness 默认后端依赖 Codex 登录或 Gemini API key；demo 单会话、无可观测性</td></tr>
+</tbody>
+</table>
+</div>
+<div class="callout callout-note">
+<div class="c-title"><span class="tag tag-third">第三方验证</span> 两者的失败面正好相反</div>
+orcarouter 的对照结论：Grok / OpenAI 侧的问题是厂商锁定与营销数字不可验证，Venus 侧的问题是「没人真正跑过」。Venus 的真实优势在权重可下载、可魔改 Harness、数据不出域、Apache-2.0；差距在生产延迟 / 可靠性数据、工具调用精确度、协议与生态完整性、运维成熟度。
+</div>
+</section>
+
+<!-- ============ 7. SCENES ============ -->
+<section id="scenes">
+<h2><span class="no">07</span>适用场景：智能眼镜、车载助手</h2>
+<p>「持续感知 + 随时交流 + 后台执行任务」正是 dual-loop 建模要解决的问题，方向契合。但真实落地门槛有六道：</p>
+<ol>
+<li><b>算力门槛</b>：官方要求 A100 级 GPU 做在线 duplex demo；眼镜 / 车机端侧不可能承载，至少需要云端常驻推理，端云协同架构不可避免，而延迟预算未知（无实测数据）。</li>
+<li><b>延迟未知</b>：1 秒 chunk cadence 下的端到端 time-to-first-audio、打断响应延迟均无公布数据；车载唤醒 / 打断体验无法做 SLA 承诺。</li>
+<li><b>工具执行要自研</b>：Harness 默认后端是 Codex（代码任务）/ Gemini（通用），车载场景（导航、车控、POI 检索）需自己实现 <code>GeneralAgentPort</code> / 注册 skill，并补齐沙箱、超时、取消、重试——论文未来工作自己也点名「从延迟 / 失败工具调用中恢复」是开放问题。</li>
+<li><b>生产化缺件</b>：demo 只支持单会话；无鉴权、多租户、计费、可观测；无 vLLM / SGLang 支持，serving 只能基于官方示例自研；Android 仅 beta APK。</li>
+<li><b>语音质量</b>：中文语音有训练覆盖且 Speech CMMLU 第一，但无 MOS / 主观评测；单参考音色，车载多角色 / 品牌音色需自研。</li>
+<li><b>工程代价量级</b>：以「算法原型 + 可魔改框架」计，需 1–2 名多模态推理工程师做 serving 与延迟优化，1 名后端工程师对接 Harness skill 生态；以「产品 SDK」计则差距甚远。</li>
+</ol>
+<div class="callout callout-warn">
+<div class="c-title">场景结论</div>
+适合作为<b>预研原型</b>验证「持续感知 + 后台委托」的产品形态，不适合直接作为量产方案的基座。
+</div>
+</section>
+
+<!-- ============ 8. RISKS ============ -->
+<section id="risks">
+<h2><span class="no">08</span>风险与局限</h2>
+<ol>
+<li><b><code>trust_remote_code=True</code> 的供应链风险</b>：HF 卡要求加载仓库自带 modeling 代码（minicpmo 等）才能推理；代码随权重更新而变，生产使用前需审计 / pin revision。官方示例虽用 <code>local_files_only=True</code>，执行的仍是仓库自定义代码逻辑。</li>
+<li><b>Apache-2.0 的范围</b>：代码与权重均为 Apache-2.0（GitHub 明确）。但 HF 卡明确加注需另行审查<b>上游模型、第三方库与数据的许可与可接受使用条款</b>——基座链 MiniCPM-o 4.5 → Qwen3-8B、Whisper、SigLIP2 各自许可需核查（Qwen 系列有自有许可），Apache-2.0 并不自动覆盖全链条。另 <code>LEGAL.md</code> 规定<b>中文注释为准</b>。</li>
+<li><b>可复现性缺失</b>：评测脚本未公开（issue #3），全双工核心数字外部无法验证；对比基线中 Gemini / GPT-4o 数字引自他文。</li>
+<li><b>已知能力短板</b>：打断响应率非最优（0.75）；Audio 过度委托 / Omni 漏委托的系统性路由偏差；prose delegate 在精确工具调用上经第三方实验证实退化；论文承认 delegation 执行成功与结果整合「需要额外评估」。</li>
+<li><b>安全面</b>：delegate 是自然语言——恶意音频 / 视频可做 prompt 注入，诱导前端发出恶意 delegate；Harness 执行任意 skill / tool，官方 demo 的 Codex workspace 无沙箱说明，生产接入必须自建隔离。</li>
+<li><b>项目活跃度风险</b>：发布一个月仅 9 commits、2 个 issue、无官方路线图；蚂蚁官方渠道无任何发布声明，存在「论文配套仓库、后续不再维护」的可能。</li>
+</ol>
+</section>
+
+<!-- ============ 9. OPEN QUESTIONS ============ -->
+<section id="open">
+<h2><span class="no">09</span>无法确认 / 开放问题</h2>
+<p>以下问题在本次调研中<b>没有找到答案</b>，如实列出，不做推测填充：</p>
+<ul class="oq">
+<li><span class="q-mark">Q</span>全双工数字（75% / 97% / 88% / 86%）无独立复现；评测脚本未公开。</li>
+<li><span class="q-mark">Q</span>端到端延迟（time-to-first-audio、打断响应延迟）无任何数据。</li>
+<li><span class="q-mark">Q</span>消费级 GPU（24GB）能否跑通 duplex：无官方承诺、无社区报告。</li>
+<li><span class="q-mark">Q</span>中文语音主观质量：无 MOS / AB 测试。</li>
+<li><span class="q-mark">Q</span>Harness 在生产流量下的稳定性、并发能力：demo 仅单会话。</li>
+<li><span class="q-mark">Q</span>蚂蚁是否有产品化 / API 化计划：官方零表态。</li>
+</ul>
+</section>
+
+<!-- ============ 10. FINAL + SOURCES ============ -->
+<section id="final">
+<h2><span class="no">10</span>综合判断</h2>
+<p>Realtime-Venus 是一个<b>真实可用、许可宽松但成熟度处于研究原型阶段</b>的开源项目。它的 dual-loop 架构（前台 1 秒 chunk 全双工交互 + Harness 对快照化任务做异步执行、经私有通道带回对话）是对「边聊边做」这一真实矛盾的完整建模，权重、代码、demo 一应俱全，Apache-2.0 且可本地部署，这是它相对闭源 API 的真实价值。但三项硬伤决定了它的使用者画像：① 所有 benchmark 数字均为自报且评测脚本未公开，唯一第三方实验还给出了负面信号（自然语言委托在精确工具调用上显著退化）；② 无延迟数据、无托管服务、无生产级运维件；③ 默认任务后端依赖 Codex / Gemini 等外部闭源服务。</p>
+<div class="steps">
+<div class="step"><div class="s-no">适合</div><h5>研究者与原型团队</h5><p>做全双工 / 异步委托方向的研究者；需要数据不出域的语音交互原型团队；想魔改 Harness 做自研 skill 的工程师。</p></div>
+<div class="step"><div class="s-no">不适合</div><h5>找 drop-in 替代的团队</h5><p>寻找 OpenAI Realtime API 开源替代、或要直接量产智能眼镜 / 车载助手语音方案的团队——至少要再投入 serving、延迟优化、工具生态三项工程，并先独立复现论文数字。</p></div>
+<div class="step"><div class="s-no">下一步</div><h5>先复现，再决策</h5><p>若考虑采用：先在 A100 上跑通官方 demo 并自测延迟与打断体验；审计 <code>trust_remote_code</code> 代码并 pin revision；核查基座链全链条许可。</p></div>
+</div>
+
+<h3>来源清单</h3>
+<p class="src" style="margin-bottom:6px;">官方（论文 / 模型卡 / 代码，verified live 2026-10-18）</p>
+<ul class="sources">
+<li><span class="s-kind">技术报告</span> arXiv:2609.13814（v3，2026-09-23 修订）：<a href="https://arxiv.org/abs/2609.13814">arxiv.org/abs/2609.13814</a>；HTML 全文（v1，数字与 v3 一致）：<a href="https://arxiv.org/html/2609.13814v1">arxiv.org/html/2609.13814v1</a></li>
+<li><span class="s-kind">模型卡</span> Hugging Face：<a href="https://huggingface.co/inclusionAI/Realtime-Venus">huggingface.co/inclusionAI/Realtime-Venus</a></li>
+<li><span class="s-kind">代码</span> GitHub 仓库：<a href="https://github.com/inclusionAI/Realtime-Venus">github.com/inclusionAI/Realtime-Venus</a>；Harness：<a href="https://github.com/inclusionAI/Realtime-Venus/tree/main/harness">…/tree/main/harness</a>；Demos：<a href="https://github.com/inclusionAI/Realtime-Venus/tree/main/demos">…/tree/main/demos</a>；Issues：<a href="https://github.com/inclusionAI/Realtime-Venus/issues">…/issues</a>；LEGAL.md：<a href="https://raw.githubusercontent.com/inclusionAI/Realtime-Venus/main/LEGAL.md">raw.githubusercontent.com/…/LEGAL.md</a></li>
+<li><span class="s-kind">项目页</span> <a href="https://realtime-venus.github.io">realtime-venus.github.io</a>（模型卡引用，未深入读）</li>
+</ul>
+<p class="src" style="margin:14px 0 6px;">第三方（verified live / index，2026-09 / 10）</p>
+<ul class="sources">
+<li><span class="s-kind">独立分析</span> OrcaRouter：<a href="https://www.orcarouter.ai/blog/realtime-venus-quiet-release">orcarouter.ai/blog/realtime-venus-quiet-release</a>；对比分析：<a href="https://www.orcarouter.ai/blog/realtime-venus-vs-grok-voice-think-fast-2-0">orcarouter.ai/blog/realtime-venus-vs-grok-voice-think-fast-2-0</a></li>
+<li><span class="s-kind">第三方实验</span> DuplexAgent-RSI（CUHK 深圳 + Amphion）：<a href="https://arxiv.org/html/2610.11299">arxiv.org/html/2610.11299</a></li>
+<li><span class="s-kind">OpenAI 对照</span> <a href="https://www.forasoft.com/blog/article/openai-realtime-api-webrtc-sip-websockets-integration">forasoft.com/…/openai-realtime-api-webrtc-sip-websockets-integration</a>；<a href="https://forasoft.medium.com/openai-realtime-api-production-voice-agents-2026-9d4e861a6dcc">forasoft.medium.com/…production-voice-agents-2026</a>；<a href="https://callsphere.ai/blog/openai-realtime-voice-agents-eval-pipeline-2026">callsphere.ai/blog/…eval-pipeline-2026</a>；<a href="https://dev.to/priteshkr/your-voice-model-probably-cant-answer-a-phone-and-the-docs-wont-tell-you-1f1h">dev.to/priteshkr/…</a></li>
+<li><span class="s-kind">社区信号</span> <a href="https://wire.rundatarun.io/briefs/2026-09-19">wire.rundatarun.io/briefs/2026-09-19</a>（提及 Reddit 帖）；<a href="https://artrealmai.com/article/realtime-venus-full-duplex-omni">artrealmai.com/article/realtime-venus-full-duplex-omni</a>（第三方科普）；<a href="https://aiweekly.co/alerts/ant-groups-realtime-venus-9b-tops-six-of-eight-video-tests">aiweekly.co/alerts/…</a>（数字转载）</li>
+</ul>
+</section>
+
+<footer>
+本报告基于 2026-10-17 / 18 的深度调研整理：结论标注分为（论文 / 官方模型卡 / 官方仓库）与（独立分析与实验）两类；所有 benchmark 数字均为论文自报，截至调研时无独立复现。开放问题一节列出的是调研中未能确认的事项，未做推测填充。
+</footer>
+</div>
+
+<!-- ai-notes-site-navigation:v1 -->
+<style id="ai-notes-site-nav-style">
+#ai-notes-site-nav{box-sizing:border-box;position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;max-width:calc(100vw - 24px);width:max-content;padding:8px 10px;border:1px solid #cad8df;border-radius:12px;background:#fff;color:#17334a;box-shadow:0 5px 24px #18324722;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#ai-notes-site-nav a{display:inline-flex;color:#17334a;text-decoration:none;padding:7px 10px;border:0;border-radius:6px;margin:0;white-space:nowrap;font-size:13px;line-height:1.5}
+#ai-notes-site-nav a:first-child{background:#eaf4f3;color:#075e69;font-weight:700}
+#ai-notes-site-nav a:hover{background:#e8eef4}#ai-notes-site-nav a:focus-visible{outline:3px solid #a67120;outline-offset:2px}
+body{padding-bottom:88px!important}@media(max-width:540px){#ai-notes-site-nav{gap:1px;padding:6px}#ai-notes-site-nav a{font-size:12px;padding:7px 8px}.to-top{bottom:82px!important}}
+@media print{#ai-notes-site-nav{display:none!important}body{padding-bottom:0!important}}
+</style>
+<div id="ai-notes-site-nav" role="navigation" aria-label="博客返回导航"><a href="/ai-notes/">← HTML专题</a><a href="/posts/">博客文章</a><a href="/collection/">收藏原文</a><a href="/">首页</a></div>
+</body>
+</html>
