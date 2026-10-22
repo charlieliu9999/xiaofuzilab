@@ -1,34 +1,43 @@
-# 将 Charlie Liu 研究札记切换到 ai-brother.cn（待执行）
+# Charlie Liu 研究札记绑定 blog.ai-brother.cn
 
-> 状态：仓库变更已准备，不代表 Cloudflare DNS 或 Pages 已完成绑定。本指南用于正式根域名切换，旧看板可能占用 `ai-brother.cn`。**仅在确认旧看板迁移/下线方案并获得 Cloudflare 控制台访问后执行。**
+> 状态：GitHub 中已准备站点地址调整，**尚未配置 Cloudflare Pages 的自定义域名和 DNS**。不要把本文件当作完成上线的证明。此次采用子域名，不迁移博客代码，也不修改旧看板的根域名绑定。
 
-## 已知项目
+## 目标架构
 
-- 新博客项目：Cloudflare Pages `charlie-blog`，当前可用地址为 `https://charlie-blog.pages.dev/`。
-- 期望根域名：`https://ai-brother.cn/`。
-- 网站名称：`Charlie Liu 研究札记`。
-- GitHub 源码：`charlieliu9999/xiaofuzilab` 的 `main`。
-- 旧看板此前绑定 `ai-brother.cn`。根域名同一时间不能同时指向两个不同的站点；不得在缺少确认的情况下覆盖其配置。
+| 用途 | 地址 / 项目 | 策略 |
+| --- | --- | --- |
+| 旧看板 | `https://ai-brother.cn/` | 保持原项目、DNS 和既有域名绑定不变 |
+| 博客新域名 | `https://blog.ai-brother.cn/` | 绑定至现有 Cloudflare Pages 项目 `charlie-blog` |
+| Pages 默认地址 | `https://charlie-blog.pages.dev/` | 保留作为访问与故障诊断入口 |
+| 博客 GitHub | `charlieliu9999/xiaofuzilab` | 原代码仓库、main 分支、部署流程不变 |
 
-## 正式切换前检查
+博客名称为「Charlie Liu 研究札记」。不切换域名注册商，不迁移数据或代码，也不更改 `ai-brother.cn` 根域名或 `www` 记录。
 
-1. 在 Cloudflare Dashboard 确定管理 `ai-brother.cn` DNS 的 zone、当前 NS、A/AAAA/CNAME 记录及其代理状态；保存 DNS 配置快照。
-2. 确认旧看板具体 Pages/Workers 项目、域名绑定、规则和可保留的备用网址，确认停机窗口及回滚责任。检查是否有针对根域名的 Redirect/Origin/Worker Route。
-3. 在 `Workers & Pages → charlie-blog → Custom domains` 中选择 **Set up a domain**，添加 `ai-brother.cn`。根域名必须是与目标 Pages 项目同一 Cloudflare 账号中的有效 zone（官方要求）。
-4. 如果 Cloudflare 提示域名已经由旧项目占用，先按照迁移方案解除**旧项目的同一域名绑定**，并清理或变更冲突的 DNS/route；不能删除其他无关记录。再完成新项目 Custom domains 激活。不要单纯手工建立 CNAME 却不在 Pages 中关联域名。
-5. 等待 Cloudflare 检查通过及 TLS 证书生效，确定 `https://ai-brother.cn/` 已服务博客的正确内容。
-6. 此时才合并本 PR，使 Astro `site`、sitemap 自定义页面、站点 `siteUrl` 与正式根域名一致。运行构建及部署验证，检查文章页 `/posts/lieflat-less-ai-tone-review/`、导航、RSS、站点地图、Open Graph 地址，检查移动端页面。
-7. 原 `https://charlie-blog.pages.dev/` 保留作为诊断入口，先不要配置强制跳转。旧看板回访地址应单独核实；**不得假定其原域名可用**。另行决定 `www.ai-brother.cn` 的跳转方案。
+## Cloudflare Pages 自定义域名接入
 
-## 验收与回滚
+1. 使用有权限的 Cloudflare 账号进入 **Workers & Pages → charlie-blog → Custom domains → Set up a domain**，添加完整主机名 `blog.ai-brother.cn`。**先创建 Pages 自定义域名关联**，不要只添加 DNS CNAME 就认为绑定成功。
+2. 检查 `ai-brother.cn` 当前的权威 DNS 管理位置及是否存在 `blog` 子域名记录。只针对 `blog` 主机名新增或修改所需的 CNAME。已有与 `blog` 冲突的记录先确认用途，不要盲目覆盖；与根域名、邮箱、旧看板有关的记录一律不动。
+3. 按 Cloudflare 控制台提示配置 `blog` 的 CNAME，目标为 `charlie-blog.pages.dev`。如果域名 DNS 托管在 Cloudflare，Pages 可能自动添加对应记录；如权威 DNS 在外部提供商，则到该提供商配置 CNAME，并以 Pages 提示为准。记录类型、代理状态、有效性必须以实际控制台反馈为准。
+4. 等待 Pages 的自定义域名状态变为 **Active** 且 HTTPS 证书可用。在尚未完成之前仍以 `https://charlie-blog.pages.dev/` 为可用博客地址。无需且不得解除 `ai-brother.cn` 旧看板的绑定。
+5. 完成域名绑定并核验后再评审/合并本仓库 [PR #3](https://github.com/charlieliu9999/xiaofuzilab/pull/3)，让 Astro 的 `site`、站点地图生成及 `SITE.siteUrl` 指向子域名。PR 通过 GitHub Actions 构建检查并不意味着 Cloudflare 域名已绑定。
+6. 检查 Cloudflare Pages 对 main 分支的生产部署是否完成；如网站由独立部署命令发布，按现有部署流程执行。不要仅凭 GitHub 构建通过就宣布线上完成。
 
-- 新根域名首页与文章页 HTTP 状态为 200，页面显示为 Charlie Liu 研究札记；HTTPS 证书有效。
-- 外链、图片、样式正常；生成的 sitemap、canonical/og:url、RSS 不再指向过时的 `charlieliu.blog`。
-- 旧看板如需保留，有经验证的独立访问地址。
-- 如新域名无法访问，撤回/暂停本 PR 相关站点配置，恢复切换前保存的 Pages custom domains 与 DNS 记录；注意证书及缓存传播耗时。实际回滚只能由有 Cloudflare 账户权限的人执行。
+## 线上验证清单
 
-## 无需替换根域名的备选
+- [ ] `https://ai-brother.cn/` 仍显示旧看板，已有路径正常
+- [ ] `https://blog.ai-brother.cn/` 返回 200，展示「Charlie Liu 研究札记」，HTTPS 证书有效
+- [ ] `https://blog.ai-brother.cn/posts/lieflat-less-ai-tone-review/` 能正常打开
+- [ ] `https://charlie-blog.pages.dev/` 仍可打开博客
+- [ ] 博客样式、图片、站内导航、移动端布局正常
+- [ ] sitemap、`og:url`、网站的规范地址（若配置 canonical）指向 `https://blog.ai-brother.cn`
+- [ ] RSS、站内绝对链接（如适用）没有意外使用旧的 `charlieliu.blog`
+- [ ] 无错误的全站重定向把根域名或旧看板引到博客
 
-如果希望旧看板继续占用根域名，改用 `blog.ai-brother.cn`：在 `charlie-blog` Pages 中添加子域名，并按 Cloudflare 控制台提示建立 `blog CNAME → charlie-blog.pages.dev`（Cloudflare 同账号 zone 可能自动生成）；将本 PR 里的正式网址从 `https://ai-brother.cn` 改为 `https://blog.ai-brother.cn`。不要直接合并以根域名为目标的配置。
+## 异常与回滚
 
-参考：Cloudflare [Pages Custom domains](https://developers.cloudflare.com/pages/configuration/custom-domains/)。
+如果子域名无法使用，先检查 Pages Custom domains 状态、CNAME 解析和证书签发状态。保持旧看板和 `pages.dev` 地址不动；如需回滚，只撤销 `blog` CNAME/自定义域名关联，并恢复博客 PR 合并前的站点地址配置。任何 DNS/Cloudflare 修改必须由具有 Cloudflare 或 DNS 管理权限的操作者执行并记录原值。
+
+## 参考
+
+- [Cloudflare Pages — Custom domains](https://developers.cloudflare.com/pages/configuration/custom-domains/)
+- [GitHub PR #3：博客子域名配置](https://github.com/charlieliu9999/xiaofuzilab/pull/3)
