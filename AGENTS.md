@@ -32,3 +32,13 @@ This is an Astro blog deployed automatically from GitHub `main` to Cloudflare Pa
 7. Verify the new URL at `https://charlie-blog.pages.dev/posts/<slug>/` and confirm HTTP 200.
 
 Never claim publishing succeeded based only on `git push`; wait for and verify the Cloudflare deployment.
+
+## Optional final-pass prose review
+
+Before publishing a completed Chinese blog post or editorial HTML note, optionally use the vendored `lieflat-less-ai-tone` Skill at `.agents/skills/lieflat-less-ai-tone/SKILL.md` **only when the writing-review task calls for it**. Read `docs/editorial-style-review.md` first.
+
+- Perform factual, source, technical and medical review **before** the style pass. This Skill does not validate facts.
+- Suggest minimal changes with rule-numbered diffs first; do not silently overwrite articles, commit, push or publish.
+- Never edit clinical source reports, guideline quotations, check-item recommendations, ACRAC rules, mapping codes or underlying research evidence through this Skill.
+- Preserve terminology, numbers, dates, medical conditions, qualifiers, certainty, links/citations, frontmatter, headings, Markdown/HTML structure and code verbatim.
+- Continue to follow the existing `npm run build`, deployment and live-site verification requirements. Style review does not authorize deployment.
