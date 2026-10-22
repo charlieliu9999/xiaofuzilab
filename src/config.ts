@@ -1,11 +1,11 @@
 // 全局站点配置
 export const SITE = {
-  title: "Charlie Liu",
+  title: "Charlie Liu 研究札记",
   description: "在技术、AI 与研究方法之间，记录问题如何被看见，想法如何慢慢成形。",
   author: "Charlie Liu",
   tagline: "Notes on AI, systems & ways of thinking",
   lang: "zh-CN",
-  siteUrl: "https://charlieliu.blog",
+  siteUrl: "https://blog.ai-brother.cn",
 };
 export const NAV = [
   { label: "首页", href: "/" },
