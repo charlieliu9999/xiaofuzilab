@@ -5,7 +5,7 @@ export const SITE = {
   author: "Charlie Liu",
   tagline: "Notes on AI, systems & ways of thinking",
   lang: "zh-CN",
-  siteUrl: "https://ai-brother.cn",
+  siteUrl: "https://blog.ai-brother.cn",
 };
 export const NAV = [
   { label: "首页", href: "/" },
