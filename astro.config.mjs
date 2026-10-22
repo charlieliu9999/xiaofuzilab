@@ -4,9 +4,9 @@ import { prepareAiNotes, getAiNotes, aiNotesIntegration } from './scripts/ai-not
 
 prepareAiNotes();
 export default defineConfig({
-  site: 'https://ai-brother.cn',
+  site: 'https://blog.ai-brother.cn',
   integrations: [
-    sitemap({ customPages: getAiNotes().map(note => new URL(note.href, 'https://ai-brother.cn').href) }),
+    sitemap({ customPages: getAiNotes().map(note => new URL(note.href, 'https://blog.ai-brother.cn').href) }),
     aiNotesIntegration(),
   ],
   markdown: { shikiConfig: { theme: 'github-dark' } },
