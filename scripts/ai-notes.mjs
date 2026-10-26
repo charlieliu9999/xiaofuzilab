@@ -39,6 +39,11 @@ const known = {
     description: '蚂蚁+清华开源的 OpenAI Realtime API 替代：双循环架构、三组件细节、benchmark 声明与验证、部署现实与风险判断。',
     category: '学习笔记', date: '2026-10-18', order: 5,
   },
+  '/ai-notes/ambitious-with-models/': {
+    title: '如何对模型更有野心——Felix Rieseberg 教程精读',
+    description: '野心分提速、高度、深度、广度四型：高度问目标之后的目标，深度用顶尖从业者的工具与外部裁判，广度把别的领域搬进来。',
+    category: '学习笔记', date: '2026-10-27', order: 6,
+  },
 };
 
 function htmlFiles(dir) {
