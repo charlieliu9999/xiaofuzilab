@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI-native PACS 产品设计 · 最终版</title>
+<style>
+:root{--ink:#1a1f2e;--mid:#3d4558;--muted:#6b7487;--bg:#f8f9fb;--card:#fff;--line:#e2e6ed;
+--teal:#0d7d6e;--teal-l:#e6f5f2;--blue:#1e4b8f;--blue-l:#edf1fa;--amber:#b45309;--amber-l:#fef3e2;--red:#9b1c1c;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+.wrap{max-width:1080px;margin:0 auto;padding:56px 40px 120px}
+.hd{border-bottom:3px solid var(--ink);padding-bottom:32px;margin-bottom:48px}
+.lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px}
+h1{font-size:38px;line-height:1.15;margin-bottom:12px;letter-spacing:-.01em}
+.sub{font-size:17px;color:var(--mid);line-height:1.6}
+.meta{font-size:12px;color:var(--muted);margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+nav{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 28px;margin:0 0 48px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+nav h2{font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:0 0 14px;font-weight:700}
+nav ol{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px}
+nav li{font-size:14px}
+nav a{color:var(--ink);text-decoration:none;padding:4px 0;display:block;transition:color .15s}
+nav a:hover{color:var(--teal)}
+nav a b{font-weight:600;margin-right:6px}
+section{margin-bottom:64px}
+h2{font-size:24px;padding-bottom:12px;border-bottom:2px solid var(--line);margin-bottom:20px;display:flex;align-items:baseline;gap:12px}
+h2 small{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+h3{font-size:17px;margin:24px 0 10px;color:var(--ink)}
+h4{font-size:15px;margin:16px 0 8px;font-weight:600}
+p{color:var(--mid);font-size:15px;margin-bottom:12px;line-height:1.7}
+strong{color:var(--ink);font-weight:600}
+ul,ol{padding-left:24px;color:var(--mid);font-size:15px;margin:12px 0}
+li{margin-bottom:6px}
+.def{background:var(--ink);color:#e8edf5;border-radius:14px;padding:32px 36px;margin:24px 0}
+.def .t{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8fa0b8;font-weight:700;margin-bottom:12px}
+.def p{color:#e8edf5;font-size:18px;line-height:1.65;margin:0}
+.def strong{color:#fff}
+.def .foot{font-size:14px;color:#b8c5d8;margin-top:16px;line-height:1.6}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}
+.three>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 20px;transition:box-shadow .2s}
+.three>div:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.three h3{margin:0 0 8px;font-size:16px}
+.three .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.three p{font-size:14px;margin:0;line-height:1.6}
+.c1{border-top:3px solid var(--teal)}.c1 .k{color:var(--teal)}
+.c2{border-top:3px solid var(--blue)}.c2 .k{color:var(--blue)}
+.c3{border-top:3px solid var(--amber)}.c3 .k{color:var(--amber)}
+.obj{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.row{display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .k{background:var(--ink);color:#c8d8e8;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center}
+.row .v{background:var(--card);padding:12px 18px;font-size:14px;color:var(--mid);line-height:1.6}
+.row .v b{color:var(--teal);font-weight:600}
+.flow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:16px 0;font-size:13px}
+.flow span{background:var(--teal-l);color:var(--teal);border:1px solid #b9e0d8;border-radius:6px;padding:5px 11px;font-weight:600}
+.flow span.x{background:var(--amber-l);color:var(--amber);border-color:#f0d3a8}
+.flow span.end{background:#f1f3f6;color:var(--muted);border-color:var(--line)}
+.flow i{color:var(--muted);font-style:normal}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.04);border-radius:10px;overflow:hidden}
+th{background:var(--ink);color:#fff;text-align:left;padding:11px 13px;font-size:12px;font-weight:700}
+td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--mid);line-height:1.6}
+tr:last-child td{border-bottom:none}
+td b{color:var(--ink);font-weight:600}
+.lv{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:#eef1f5;color:var(--ink)}
+.arch{display:grid;gap:10px;margin:18px 0}
+.tier{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:16px 20px;display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:start}
+.tier .n{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:6px 10px;border-radius:5px;text-align:center}
+.tier.t1 .n{background:var(--teal-l);color:var(--teal)}
+.tier.t2 .n{background:var(--blue-l);color:var(--blue)}
+.tier.t3 .n{background:var(--amber-l);color:var(--amber)}
+.tier.t4 .n{background:#f1f3f6;color:var(--muted)}
+.tier .b{font-size:14px;color:var(--mid);line-height:1.6}
+.tier .b b{color:var(--ink);display:block;margin-bottom:4px;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chips span{font-size:12.5px;background:#f1f3f6;border:1px solid var(--line);border-radius:6px;padding:3px 9px;color:var(--mid)}
+.note{border-left:4px solid var(--teal);background:var(--teal-l);border-radius:0 10px 10px 0;padding:16px 22px;margin:16px 0;font-size:14px;color:var(--mid);line-height:1.65}
+.note b{color:var(--ink);font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.two>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;font-size:14px}
+.two h3{margin:0 0 10px;font-size:16px}
+.two h4{margin:12px 0 6px;font-size:14.5px}
+.two ul{padding-left:20px;color:var(--mid)}
+.two li{margin-bottom:5px}
+.q{display:grid;grid-template-columns:38px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:10px 0;font-size:14px;color:var(--mid);line-height:1.6}
+.q b{color:var(--ink);font-weight:600}
+.q .n{font-weight:800;color:var(--teal);font-size:15px}
+.test{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:12px 0;display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}
+.test .ic{width:42px;height:42px;border-radius:8px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.test .bd{font-size:14px;color:var(--mid);line-height:1.6}
+.test .bd b{color:var(--ink);font-weight:600;display:block;margin-bottom:4px;font-size:15px}
+.steps{display:grid;gap:12px;margin:18px 0}
+.step{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:18px 22px;display:grid;grid-template-columns:50px 1fr;gap:16px;align-items:start}
+.step .num{width:50px;height:50px;border-radius:10px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+.step .txt{font-size:14px;color:var(--mid);line-height:1.6}
+.step .txt b{color:var(--ink);font-weight:600;display:block;margin-bottom:6px;font-size:15.5px}
+.step ul{margin:8px 0 0;padding-left:20px}
+.hl{background:var(--amber-l);color:var(--amber);border:1px solid #f0d3a8;border-radius:8px;padding:14px 18px;margin:16px 0;font-size:14px;line-height:1.65}
+.hl b{color:var(--amber);font-weight:700}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+.compare>div{border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.compare h4{margin:0 0 12px;font-size:16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.compare.old>div:first-child{background:#fef2f2;border-color:#fca5a5}
+.compare.old h4{color:var(--red)}
+.compare.new>div:last-child{background:var(--teal-l);border-color:#b9e0d8}
+.compare.new h4{color:var(--teal)}
+@media(max-width:820px){.three,.two,.compare{grid-template-columns:1fr}.row,.tier,.step{grid-template-columns:1fr}.wrap{padding:32px 20px 80px}nav ol{grid-template-columns:1fr}}
+@media print{body{background:#fff}.wrap{padding:0}section{break-inside:avoid}}
+</style>
+</head>
+<body><div class="wrap">
+
+<header class="hd">
+  <div class="lbl">产品设计文档 · PRODUCT DESIGN · 最终版</div>
+  <h1>AI-native PACS 产品设计</h1>
+  <p class="sub">从设计哲学、核心对象、工作流到功能架构——完整的产品定义与设计方法</p>
+  <div class="meta">v2.0 Final · 2026-11-01 · 本文整合设计哲学与方法论，统一使用审核后术语，是对外交付与内部迭代的权威依据</div>
+</header>
+
+<nav>
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#s1"><b>§1</b> 定义：什么是 AI-native PACS</a></li>
+    <li><a href="#s2"><b>§2</b> 设计约束：问题驱动 · 语义保真 · 闭环可证</a></li>
+    <li><a href="#s3"><b>§3</b> 翻转：自动化级别的重新配置</a></li>
+    <li><a href="#s4"><b>§4</b> 核心对象：临床问题（Clinical Question）</a></li>
+    <li><a href="#s5"><b>§5</b> 工作流：10 个节点 + 1 个分支</a></li>
+    <li><a href="#s6"><b>§6</b> 功能架构：四层</a></li>
+    <li><a href="#s7"><b>§7</b> 设计过程：从哲学到功能的 8 步推导</a></li>
+    <li><a href="#s8"><b>§8</b> 验证：判别问题与北极星指标</a></li>
+    <li><a href="#s9"><b>§9</b> 边界与 MVP</a></li>
+    <li><a href="#s10"><b>§10</b> 设计检查清单</a></li>
+  </ol>
+</nav>
+
+<!-- §1 定义 -->
+<section id="s1">
+<h2><small>01</small>定义：什么是 AI-native PACS</h2>
+<div class="def">
+  <div class="t">一句话定义</div>
+  <p>一个围绕<strong>「临床问题」</strong>组织工作的影像诊断系统：<strong>AI 先行起草</strong>每一步产出,<strong>人审核签发</strong>；语义沿全流程<strong>保真且可溯源</strong>；每一次交付都有<strong>确认闭环</strong>。它处理的是证据，不是文件。</p>
+  <div class="foot">它不是 RIS + PACS + AI。RIS 与 PACS 的分裂是"检查对象"模型的产物——RIS 管单子、PACS 管图片。核心对象换成"临床问题"后，这个分裂不再存在：申请、协议、影像、报告、沟通都是同一个问题对象的不同阶段。对外沿用 AI-native PACS 作为名称。</div>
+</div>
+
+<h3>它与 PACS + AI 的本质区别</h3>
+<div class="compare old">
+  <div>
+    <h4>PACS + AI：旁路辅助</h4>
+    <p>人操作为主，AI 在旁路上给建议。阅片医生可以选择看或不看 AI 标注；报告医生可以参考或不参考 AI 预读。AI 关掉，系统照常运转。</p>
+    <ul>
+      <li>核心对象是"检查"（一次扫描）</li>
+      <li>协议来自通用模板库</li>
+      <li>报告从空白文本框开始</li>
+      <li>质控在签发后抽检</li>
+      <li>AI 结果放在单独窗口，不进主流程</li>
+    </ul>
+  </div>
+  <div>
+    <h4>传统工作流示意</h4>
+    <p style="font-size:13px;color:var(--muted)">申请（人填） → 排程（人排） → 扫描（人操作） → 归档（自动） → 阅片（人读，AI 旁观） → 报告（人写，可能参考 AI） → 签发（人签） → 发送</p>
+  </div>
+</div>
+
+<div class="compare new">
+  <div>
+    <h4>AI-native：主路起草</h4>
+    <p>AI 在关键路径上先行起草，人审核签发。协议草案、标注、报告条目、质控意见都由 AI 生成，医生审核后确认。AI 服务不可用时，系统进入显式标记的降级模式。</p>
+    <ul>
+      <li>核心对象是"临床问题"（为什么做）</li>
+      <li>协议按问题 + 约束推导</li>
+      <li>报告从 AI 草稿开始审核</li>
+      <li>质控在签发前逐份完成</li>
+      <li>AI 结果是下一步输入，不是附件</li>
+    </ul>
+  </div>
+  <div>
+    <h4>AI-native 工作流示意</h4>
+    <p style="font-size:13px;color:var(--muted)">申请（AI 预审） → 协议（AI 草案 → 人确认） → 采集（AI 质检 → 人补扫） → 标注（AI 标注） → 报告（AI 起草 → 人审核） → 质控（AI 核查 → 人处理） → 签发（人签） → 交付（AI 解释 → 人确认）</p>
+  </div>
+</div>
+</section>
+
+<!-- §2 设计约束 -->
+<section id="s2">
+<h2><small>02</small>设计约束：问题驱动 · 语义保真 · 闭环可证</h2>
+<p>不是功能列表，而是所有功能必须满足的三条约束。任何设计决策违反其一，即不属于本产品。</p>
+
+<div class="three">
+  <div class="c1">
+    <div class="k">约束一</div>
+    <h3>问题驱动</h3>
+    <p>每个工作步骤都知道"这次检查为什么做"。协议、质检标准、报告结构、危急值判断，都从临床问题推导，不从通用模板出发。<b>问题驱动不等于只看问题</b>：意外发现有独立通道，技师与临床医生的人工发现也走此通道。</p>
+  </div>
+  <div class="c2">
+    <div class="k">约束二</div>
+    <h3>语义保真</h3>
+    <p>信息沿链条<b>不丢失</b>（内容完整）、<b>不失真</b>（换形式不换含义）、<b>不失源</b>（每条信息标注来自系统 AI / 持证算法 / 规则 / 人工，含版本与时间）。只转换呈现方式，不做降维。测量可比时给变化，不可比时输出不可比的原因而非强行给出增长率。</p>
+  </div>
+  <div class="c3">
+    <div class="k">约束三</div>
+    <h3>闭环可证</h3>
+    <p>系统永远知道自己发出的信息是否被接收。每个需要他人行动的输出都有确认机制，确认状态是系统状态的一部分。系统也知道<b>自己处于哪种运行模式</b>（正常 / 降级）。降级不是妥协，而是理念的一部分——临床主线独立可运行。</p>
+  </div>
+</div>
+
+<h3>四个判别问题</h3>
+<p>任一答"否"即非 AI-native。</p>
+<div class="q"><span class="n">Q1</span><span><b>系统是否知道"为什么做"？</b>协议、QC、报告结构是否按临床问题定制，而非把诊断当备注字段。</span></div>
+<div class="q"><span class="n">Q2</span><span><b>每条结论能否追溯到证据与来源？</b>点条目跳标注，测量值知道出自哪一层、哪个算法、哪个版本。</span></div>
+<div class="q"><span class="n">Q3</span><span><b>系统是否知道信息被谁接收？</b>危急值、协议草案、患者说明都有确认状态。</span></div>
+<div class="q"><span class="n">Q4</span><span><b>AI 是否在关键路径上？</b>默认路径是"AI 起草→人签发"；AI 不可用时进入显式标记的降级模式，而非静默退回"正常"。PACS+AI 的 AI 在旁路上，关掉无感；AI-native 的 AI 在主路上，关掉有明确的模式切换与留痕。</span></div>
+</section>
+
+<!-- §3 翻转 -->
+<section id="s3">
+<h2><small>03</small>翻转：自动化级别的重新配置</h2>
+<p>AI-native 的逻辑：<strong>AI 先行起草，人审核签发</strong>。协议草案由 AI 生成，技师审核后确认执行；报告条目由 AI 按标注和病史生成，医生审核中可以对着图像语音修改；质控由 AI 逐份完成，医生看到的已经是标出问题的报告。人不是在做工作，而是在审核 AI 已经完成的草案。</p>
+
+<p>精确表达是：把每个动作的默认自动化级别从 A0（人工操作）提到 A1（自动准备）/ A2（确认后执行）；A3（预批准自动化）限于随访提醒、队列分配等事务；A4（自主临床决策）不在本产品范围。<strong>签发永远由人完成。</strong></p>
+
+<table>
+<thead><tr><th style="width:70px">级别</th><th style="width:130px">含义</th><th>本产品中的典型动作</th><th style="width:130px">谁负责</th></tr></thead>
+<tbody>
+<tr><td><span class="lv">A0</span></td><td>人工操作</td><td>降级模式下的全部步骤；AI 不适用时的原图阅片</td><td>人</td></tr>
+<tr><td><span class="lv">A1</span></td><td>自动准备</td><td>整单预审意见、协议草案、历史预取与对齐、病灶标注、报告条目草稿、语义质控标记、风险预读、患者版解释草稿</td><td>AI 生成，不对外发布</td></tr>
+<tr><td><span class="lv">A2</span></td><td>确认后执行</td><td>缺项补开、协议执行、补扫、报告提交、<b>签发</b>、危急值推送、患者说明发出</td><td>有权限的人确认</td></tr>
+<tr><td><span class="lv">A3</span></td><td>预批准自动化</td><td>随访到期提醒、审核队列分配、接口失败重试、已确认计划的分发</td><td>规则内自动，留痕</td></tr>
+<tr><td><span class="lv">A4</span></td><td>自主临床决策</td><td>自动签发、自主改变治疗方案 —— <b>不纳入本产品</b></td><td>—</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>降级模式是约束三的体现。</b>AI 服务不可用时，系统进入显式标记的 A0 模式：界面提示、报告留痕、事后可统计。临床主线独立可运行；AI 增强线是默认开启的主路径，而非可选插件。</div>
+</section>
+
+<!-- §4 核心对象 -->
+<section id="s4">
+<h2><small>04</small>核心对象：临床问题（Clinical Question）</h2>
+<p>系统的聚合根。从申请提交时创建，到交付确认后归档；所有环节的输入输出都挂在它上面。它不是数据库表，而是有状态、有生命周期的领域对象。</p>
+
+<div class="obj">
+  <div class="row"><div class="k">问题陈述</div><div class="v">临床诊断 + 检查目的的语义表达。例："排除主动脉夹层"。<b>驱动一切下游决策。</b></div></div>
+  <div class="row"><div class="k">患者约束</div><div class="v">肾功能、过敏史、体重、既往手术、用药——影响协议与判断的临床因素，按目的最小化装配，带版本</div></div>
+  <div class="row"><div class="k">证据需求</div><div class="v">回答此问题需要的影像证据：范围、时相、层厚——由问题陈述 + 患者约束推导</div></div>
+  <div class="row"><div class="k">证据采集</div><div class="v">实际协议（含与标准的差异及理由、技师确认）、序列级 QC 结果（持证算法 + 问题支撑性复核）、补扫记录</div></div>
+  <div class="row"><div class="k">诊断推理</div><div class="v">标注（来源、版本、置信度）↔ 检查所见条目 ↔ 测量值，三者双向关联；诊断意见逐条附依据</div></div>
+  <div class="row"><div class="k">意外发现</div><div class="v">不回答当前问题但有临床意义的发现。可触发独立报告条目、派生新问题线、或危急值流程。<b>技师与临床医生的人工发现也走此通道。</b></div></div>
+  <div class="row"><div class="k">答案（版本化）</div><div class="v">结论 + 处置建议 + 随访计划 + 患者版解释。签发后不可变；新信息产生新签发版本，旧版本保留</div></div>
+  <div class="row"><div class="k">交付状态</div><div class="v">推送、临床回读、患者查阅的时间点与确认状态。系统知道答案是否被接收</div></div>
+  <div class="row"><div class="k">问题线</div><div class="v">同一患者、同一临床问题的连续对象串联。随访是线的延续；测量可比性在线内校验，不可比时输出原因而非强行给出增长率</div></div>
+</div>
+
+<h3>生命周期（9 个主状态 + 2 个分支）</h3>
+<div class="flow">
+  <span>Created</span><i>→</i><span>Validated</span><i>→</i><span>Acquiring</span><i>→</i><span>Evidence-Ready</span><i>→</i><span>Diagnosing</span><i>→</i><span>Draft-Ready</span><i>→</i><span>Review-Pending</span><i>→</i><span>Signed</span><i>→</i><span>Delivered</span>
+</div>
+<div class="flow"><i>分支：</i><span class="x">QC-Flagged</span><i>（语义质控退回，回到 Diagnosing）</i>&nbsp;<span class="x">Amended</span><i>（签发后修正，产生新版本后回到 Delivered）</i>&nbsp;<span class="end">Cancelled</span><i>（任一阶段终止）</i></div>
+
+<div class="note"><b>为什么要有"意外发现"？</b>问题驱动有隧道视野风险——医生申请胸部 CT 排查肺结节，影像发现主动脉根部钙化，这不回答"肺结节有没有"，但有临床意义。意外发现通道让它不被丢弃：可以触发独立报告条目（在当前报告里）、派生新问题线（开新检查申请）、或启动危急值流程。技师与临床医生的人工发现也走此通道，而非只有 AI 可以报意外。</div>
+</section>
+
+<!-- §5 工作流 -->
+<section id="s5">
+<h2><small>05</small>工作流：10 个节点 + 1 个分支</h2>
+<p>每个节点是一次状态转换的执行者。AI 列为 A1 产出，人列为 A2 确认；闭环列标明系统如何得知结果。</p>
+
+<table>
+<thead><tr><th style="width:30px">#</th><th style="width:130px">节点</th><th>AI 先行（A1）</th><th>人签发（A2）</th><th style="width:150px">闭环</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>申请与预审</b></td><td>解析临床诊断，装配患者约束，生成证据需求，整单预审（缺项、配套、禁忌）</td><td>申请医生确认补开</td><td>预审意见回推，确认后才下发</td></tr>
+<tr><td>2</td><td><b>排程</b></td><td>按证据需求与设备状态推荐时段</td><td>登记员确认，处理例外</td><td>变更推送患者与岗位</td></tr>
+<tr><td>3</td><td><b>协议</b></td><td>按问题 + 约束生成草案，标注与标准协议的差异及理由；越界由规则拦截</td><td>技师确认执行</td><td>草案 + 确认记录入对象</td></tr>
+<tr><td>4</td><td><b>采集与质检</b></td><td>序列级 QC：图像质量（持证算法）+ 问题支撑性（系统复核）</td><td>技师离机前补扫</td><td>QC 与补扫记录入对象</td></tr>
+<tr><td>5</td><td><b>历史对齐</b></td><td>问题线内历史影像对齐到同一层面，测量串成变化记录，病史摘要可点回原文</td><td>医生核对对齐</td><td>可比性校验结果入对象</td></tr>
+<tr><td>6</td><td><b>标注与报告</b></td><td>病灶标注（持证算法）→ 所见条目 → 诊断意见附依据；意外发现独立成条</td><td>医生审核、语音修改、确认测量</td><td>条目↔标注双向关联</td></tr>
+<tr><td>7</td><td><b>语义质控</b></td><td>所见 vs 结论、本次 vs 历史、报告 vs 临床诊断，三项契合度逐份核查</td><td>医生处理标记后提交</td><td>不通过不进审核队列</td></tr>
+<tr><td>8</td><td><b>审核签发</b></td><td>风险预读，高风险置顶，附质控记录与关键层面</td><td>审核医生签发</td><td>签发版本冻结</td></tr>
+<tr><td>9</td><td><b>危急值</b></td><td>语义分析命中 → 推送报告 + 影像 + 标注到临床桌面</td><td>报告医生确认发出；临床医生回读确认</td><td>时间点留痕，超时升级</td></tr>
+<tr><td>9b</td><td><b>签发后修正</b></td><td>补传影像、晚到 AI 结果、临床质疑 → 生成"签发后新信息"任务</td><td>医生评估后签发新版本</td><td>级联更新分发、患者说明、随访</td></tr>
+<tr><td>10</td><td><b>患者交付</b></td><td>图文报告、患者版解释、处置与随访草稿；患者提问按报告内容作答</td><td>医生确认解释与建议</td><td>患者查阅状态入对象</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- §6 功能架构 -->
+<section id="s6">
+<h2><small>06</small>功能架构：四层</h2>
+<div class="arch">
+  <div class="tier t1"><div class="n">业务层</div><div class="b"><b>10 个业务模块，一一对应工作节点</b>
+    <div class="chips"><span>申请与预审</span><span>排程调度</span><span>协议管理与生成</span><span>采集与质检</span><span>影像归档与检索</span><span>历史对齐与问题线</span><span>阅片与报告</span><span>质控与审核</span><span>危急值与沟通</span><span>患者交付与随访</span></div></div></div>
+
+  <div class="tier t2"><div class="n">能力层</div><div class="b"><b>6 个横向能力，业务模块通过统一接口调用</b>
+    <div class="chips"><span>临床语义引擎</span><span>持证算法接入平台</span><span>规则引擎</span><span>任务编排</span><span>评测与治理</span><span>审计追溯</span></div>
+    <p style="margin-top:12px;font-size:13.5px"><b>临床语义引擎</b>：解析申请、推导证据需求、语义质控（所见vs结论、本次vs历史、报告vs临床诊断）、风险预读。<b>持证算法接入平台</b>：调用、结果、版本、留痕。<b>规则引擎</b>：配套、安全边界、危急值、自动化级别配置。<b>任务编排</b>：触发→上下文→执行→验证→确认→评估；预算与退出。<b>评测与治理</b>：本地验证、运行监控、反馈回流、受控改进。<b>审计追溯</b>：谁、何时、依据什么、改了什么。</p></div></div>
+
+  <div class="tier t3"><div class="n">数据层</div><div class="b"><b>临床问题对象库为中心</b>
+    <div class="chips"><span>临床问题对象库（关系型 + 文档型）</span><span>影像存储（DICOM Archive）</span><span>知识库（协议、规则、模板、术语）</span><span>签发版本库（不可变）</span></div></div></div>
+
+  <div class="tier t4"><div class="n">接入层</div><div class="b"><b>互操作</b>
+    <div class="chips"><span>HIS / EMR（HL7 FHIR）</span><span>设备（DICOM Worklist / MPPS / Store）</span><span>区域平台与外院调阅</span><span>患者端（小程序 / App）</span></div></div></div>
+</div>
+
+<div class="note"><b>任务编排是 AI-native 区别于"调用几个算法"的技术核心。</b>每个 AI 任务必须声明：为哪个问题对象、读取哪些数据版本、允许哪些工具、输出什么对象、由谁确认、预算用尽如何退出。任务记忆限于本病例，不跨患者。工作流管状态与责任，规则引擎管明确条件，AI 管文字、图像、模糊匹配与候选推理——三者分工，AI 不是唯一的状态库、身份系统或签发控制器。</div>
+</section>
+
+<!-- §7 设计过程 -->
+<section id="s7">
+<h2><small>07</small>设计过程：从哲学到功能的 8 步推导</h2>
+<p>设计不是"想功能"，而是从约束推导到架构的过程。任何跳步都会让产品在中途偏离 AI-native 的定义。</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="num">1</div>
+    <div class="txt">
+      <b>陈述约束</b>
+      <p>先写三条设计约束（问题驱动、语义保真、闭环可证），用判别问题验证。任何功能违反其一，砍掉。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div class="txt">
+      <b>识别核心对象</b>
+      <p>什么是系统的聚合根？不是"检查"，而是"临床问题"。列出它的 9 个组成部分（问题陈述、患者约束、证据需求、证据采集、诊断推理、意外发现、答案、交付状态、问题线），画出 9 态生命周期。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div class="txt">
+      <b>定义自动化级别</b>
+      <p>不是"AI 做什么"，而是"每个动作配置在 A0–A4 哪一级"。列出 A1（自动准备）、A2（确认后执行）、A3（预批准自动化）的典型动作，明确 A4 不纳入，降级模式回 A0。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <div class="txt">
+      <b>推导工作流</b>
+      <p>按对象的生命周期推导 10+1 个节点。每个节点标明：AI 先行什么（A1）、人确认什么（A2）、如何闭环。不能跳过节点 7（语义质控），否则违反约束二。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">5</div>
+    <div class="txt">
+      <b>分层架构</b>
+      <p>业务层（10 模块）、能力层（6 能力）、数据层（4 库）、接入层（4 接口）。能力层是横向的，业务层通过统一接口调用。任务编排是能力层的核心，管 AI 任务的触发、上下文、预算、退出。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">6</div>
+    <div class="txt">
+      <b>功能规格</b>
+      <p>逐个节点写交互流程、输入输出、异常处理。每个流程都要回答：AI 生成什么、人审核什么、如何闭环、降级时怎么办。用状态图 + 序列图表达，不要只写文字。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">7</div>
+    <div class="txt">
+      <b>指标与验证</b>
+      <p>三条约束各一组北极星指标。问题驱动：申请缺项拦截率、离机前补扫比例、协议草案采纳率。语义保真：条目↔标注关联率、来源标注覆盖率。闭环可证:危急值确认时长、降级模式时长占比。写 20 个端到端用例，用真实病例跑状态机。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">8</div>
+    <div class="txt">
+      <b>边界与迭代</b>
+      <p>明确不做什么（设备底层优化、算法研发、A4 决策、科研平台）。定义 MVP：节点 1·3·4·6·7·8，一个场景（急诊 CTA 或肺结节随访），3–6 个月，四个判别问题 + 20 个用例验收。每 2 周一个迭代，每个迭代用真实病例走一遍状态机。</p>
+    </div>
+  </div>
+</div>
+
+<div class="hl"><b>警告：常见的跳步错误</b><br>直接列功能、先画界面、把工作流当成"用户点什么按钮"、让 AI 团队自己定义任务边界、没有降级模式、质控在签发后抽检、把"临床诊断"当备注字段、报告条目不关联标注、危急值没有确认状态、历史影像只做"参考"不做对比。这些都是因为跳过了前 4 步。</div>
+</section>
+
+<!-- §8 验证 -->
+<section id="s8">
+<h2><small>08</small>验证：判别问题与北极星指标</h2>
+<div class="two">
+  <div>
+    <h3>四个判别问题</h3>
+    <p style="margin-bottom:14px">任一答"否"即非 AI-native。</p>
+    <div class="test"><div class="ic">Q1</div><div class="bd"><b>系统是否知道"为什么做"？</b>协议、QC、报告结构是否按临床问题定制，而非把诊断当备注字段。</div></div>
+    <div class="test"><div class="ic">Q2</div><div class="bd"><b>每条结论能否追溯到证据与来源？</b>点条目跳标注，测量值知道出自哪一层、哪个算法、哪个版本。</div></div>
+    <div class="test"><div class="ic">Q3</div><div class="bd"><b>系统是否知道信息被谁接收？</b>危急值、协议草案、患者说明都有确认状态。</div></div>
+    <div class="test"><div class="ic">Q4</div><div class="bd"><b>AI 是否在关键路径上？</b>默认路径是"AI 起草→人签发"；AI 不可用时进入显式标记的降级模式，而非静默退回"正常"。</div></div>
+  </div>
+
+  <div>
+    <h3>北极星指标</h3>
+    <h4>问题驱动</h4>
+    <ul>
+      <li>申请缺项在提交时拦截率（目标 >95%）</li>
+      <li>离机前补扫占全部补扫的比例（vs 召回，目标 >80%）</li>
+      <li>协议草案采纳率与修改原因分布</li>
+    </ul>
+    <h4>语义保真</h4>
+    <ul>
+      <li>报告条目与标注关联率（目标 100%）</li>
+      <li>临床医生回查原图次数（指标：降低）</li>
+      <li>患者版解释经医生修改的比例</li>
+      <li>来源标注覆盖率（目标 100%）</li>
+    </ul>
+    <h4>闭环可证</h4>
+    <ul>
+      <li>危急值从命中到回读确认的时长分布与超时率</li>
+      <li>签发后修正的级联更新完成率（目标 100%）</li>
+      <li>降级模式时长占比与期间病例数</li>
+    </ul>
+    <h4>总体</h4>
+    <ul>
+      <li>申请到签发全流程时长（按科室基线设定）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- §9 边界与 MVP -->
+<section id="s9">
+<h2><small>09</small>边界与 MVP</h2>
+<div class="two">
+  <div>
+    <h3>不做什么</h3>
+    <ul>
+      <li>设备排队调度的底层优化算法</li>
+      <li>影像后处理专业工具（归持证算法与第三方）</li>
+      <li>AI 算法研发与注册（只接入持证算法）</li>
+      <li>科研数据平台、区域会诊平台、医院集成总线</li>
+      <li>A4 自主临床决策</li>
+    </ul>
+    <p style="margin-top:14px;font-size:13.5px;color:var(--muted)">医疗 IT 的边界模糊，容易陷入"什么都做"。守住核心：临床问题对象 + AI 主路 + 闭环确认，其他能力通过接口对接。</p>
+  </div>
+  <div>
+    <h3>MVP（3–6 个月）</h3>
+    <p><b>范围</b>：节点 1 · 3 · 4 · 6 · 7 · 8，一个完整闭环（申请→签发），一个场景先跑通（急诊 CTA 或肺结节随访二选一）。</p>
+    <p><b>验收</b>：四个判别问题 + 20 个端到端用例（见原 review-plan §14）为准。</p>
+    <p><b>节奏</b>：每 2 周一个迭代，每个迭代用真实病例走一遍状态机。不追求功能完整，追求闭环跑通。</p>
+    <p style="margin-top:14px;font-size:13.5px;color:var(--muted)">MVP 不是"最小可卖"，而是"最小可验证约束"。如果 MVP 里协议还是通用模板、报告还是空白开始、质控还是签发后抽检，那它不是 AI-native 的 MVP。</p>
+  </div>
+</div>
+</section>
+
+<!-- §10 设计检查清单 -->
+<section id="s10">
+<h2><small>10</small>设计检查清单</h2>
+<p>每个功能规格、每个迭代、每次代码审查，都过一遍这张清单。</p>
+
+<h3>核心对象</h3>
+<ul>
+  <li>临床问题对象包含 9 个组成部分（问题陈述、患者约束、证据需求、证据采集、诊断推理、意外发现、答案、交付状态、问题线）</li>
+  <li>对象有 9 态生命周期 + 2 个分支（QC-Flagged、Amended、Cancelled）</li>
+  <li>答案签发后不可变，新信息产生新版本</li>
+  <li>问题线串联同一患者、同一临床问题的连续对象</li>
+</ul>
+
+<h3>问题驱动</h3>
+<ul>
+  <li>协议按问题 + 约束推导，不从通用模板出发</li>
+  <li>质检标准按问题支撑性评估，不只看图像质量</li>
+  <li>报告结构按问题定制，不是通用框架填空</li>
+  <li>意外发现有独立通道，不丢弃问题外的发现</li>
+</ul>
+
+<h3>语义保真</h3>
+<ul>
+  <li>报告条目↔标注双向关联（点条目跳标注）</li>
+  <li>测量值记录层面、算法、版本、时间</li>
+  <li>历史对比先校验可比性，不可比时输出原因</li>
+  <li>每条信息标注来源（系统 AI / 持证算法 / 规则 / 人工）</li>
+  <li>患者版解释可回溯到报告条目</li>
+</ul>
+
+<h3>闭环可证</h3>
+<ul>
+  <li>协议草案有技师确认，确认记录入对象</li>
+  <li>危急值有临床医生回读确认，超时升级</li>
+  <li>患者说明有医生确认发出，患者查阅状态可查</li>
+  <li>签发后修正触发级联更新（分发、患者说明、随访）</li>
+  <li>降级模式有显式标记，事后可统计</li>
+</ul>
+
+<h3>自动化级别</h3>
+<ul>
+  <li>每个动作标明 A0–A3 级别，A4 不纳入</li>
+  <li>签发永远在 A2（人确认），不可配置为 A3</li>
+  <li>降级模式回 A0，有界面提示与报告留痕</li>
+</ul>
+
+<h3>任务编排</h3>
+<ul>
+  <li>每个 AI 任务声明：问题对象、数据版本、工具、输出、确认人、预算、退出</li>
+  <li>任务记忆限于本病例，不跨患者</li>
+  <li>工作流管状态、规则引擎管条件、AI 管推理，三者分工明确</li>
+</ul>
+
+<h3>架构</h3>
+<ul>
+  <li>业务层 10 模块对应 10 节点</li>
+  <li>能力层 6 能力横向调用（临床语义引擎、持证算法接入、规则引擎、任务编排、评测治理、审计追溯）</li>
+  <li>数据层以临床问题对象库为中心</li>
+  <li>接入层对接 HIS/EMR、设备、区域平台、患者端</li>
+</ul>
+</section>
+
+<footer style="margin-top:64px;padding-top:24px;border-top:2px solid var(--line);font-size:13px;color:var(--muted);line-height:1.7">
+  <p><b>版本说明</b>：本文整合 ai-native-pacs-design-concept.html 与 product-design-methodology.html，统一使用审核后术语（问题驱动·语义保真·闭环可证，AI 先行起草/人审核签发，修正 Q4，补意外发现/签发版本/问题线/能力层，状态机精简为 9 态）。是对外交付与内部迭代的权威依据。</p>
+  <p style="margin-top:10px"><b>相关文档</b>：架构简述 ai-native-pacs-architecture-brief.html ｜ 图解 concept-diagrams-gallery.html ｜ 审核记录 design-audit-and-optimization.html ｜ 功能规格 ai-native-ris-pacs-system-blueprint.html ｜ 评审方案 ai-native-imaging-platform-review-plan.html</p>
+</footer>
+
+</div>
+<!-- ai-notes-site-navigation:v1 -->
+<style id="ai-notes-site-nav-style">
+#ai-notes-site-nav{box-sizing:border-box;position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;max-width:calc(100vw - 24px);width:max-content;padding:8px 10px;border:1px solid #cad8df;border-radius:12px;background:#fff;color:#17334a;box-shadow:0 5px 24px #18324722;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#ai-notes-site-nav a{display:inline-flex;color:#17334a;text-decoration:none;padding:7px 10px;border:0;border-radius:6px;margin:0;white-space:nowrap;font-size:13px;line-height:1.5}
+#ai-notes-site-nav a:first-child{background:#eaf4f3;color:#075e69;font-weight:700}
+#ai-notes-site-nav a:hover{background:#e8eef4}#ai-notes-site-nav a:focus-visible{outline:3px solid #a67120;outline-offset:2px}
+body{padding-bottom:88px!important}@media(max-width:540px){#ai-notes-site-nav{gap:1px;padding:6px}#ai-notes-site-nav a{font-size:12px;padding:7px 8px}.to-top{bottom:82px!important}}
+@media print{#ai-notes-site-nav{display:none!important}body{padding-bottom:0!important}}
+</style>
+<div id="ai-notes-site-nav" role="navigation" aria-label="博客返回导航"><a href="/ai-notes/">← HTML专题</a><a href="/posts/">博客文章</a><a href="/collection/">收藏原文</a><a href="/">首页</a></div>
+</body></html>
